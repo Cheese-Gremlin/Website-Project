@@ -1,8 +1,22 @@
+/* .home-page-castle-drawing {
+  background-image: url('images/home-page-castle-drawing.png');
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+} */
+
+
 body {
-  margin: 0;
+  background: #5effdc;
+  background-image: url('images/home-page-castle-drawing.png');
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+
+  margin-right: center;
   padding: 40px;
   font-family: Courier, monospace;
-  background: #5effdc;
+  
 }
 
 /* Title */
