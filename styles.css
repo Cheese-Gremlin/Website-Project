@@ -1,35 +1,37 @@
 body {
   margin: 0;
   padding: 40px;
-  font-family: Arial, sans-serif;
-  background: #fcf8f6;
+  font-family: Courier, monospace;
+  background: #5effdc;
 }
 
 /* Title */
 .title {
-  color: #15267a;
-  margin-bottom: 4px;
-  font-weight: 500;
+  color: rgb(22, 179, 74);
+  margin-bottom: 20px;
+  font-weight: 700;
 }
 
 /* Light underline under the title */
 .underline {
   width: 200px;
   height: 2px;
-  background: #d7d7f5;
+  background: #03fc9c;
+  color: #d12323;
   margin-bottom: 50px;
 }
 
 /* Centered button */
 .main-button {
   display: block;
-  margin: 150px auto;
-  padding: 20px 80px;
-  background: #e0fdff;
-  border: 2px solid #c8eaff;
-  border-radius: 10px;
-  font-size: 18px;
-  color: #15267a;
+  margin: 35px auto;
+  padding: 25px 75px;
+  background: rgb(22, 179, 74);
+  border: 5px solid rgb(0, 134, 72);
+  border-radius: 150px;
+  font-family: Courier, monospace;
+  font-size: 25px;
+  color: #000000;
   cursor: pointer;
 
   /* Smooth transition to hover state */
@@ -38,6 +40,8 @@ body {
 
 /* Hover effect */
 .main-button:hover {
-  background: skyblue;        /* #87CEEB */
-  border-color: mediumPurple; /* #9370DB */
+  background: rgb(39, 214, 98);       /* #87CEEB */
+  border-color: rgb(9, 168, 94); /* #9370DB */
+  font-weight: 1000;
+
 }
