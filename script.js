@@ -4,7 +4,7 @@
 //  Everything else is automatic — no HTML files need touching.
 // ================================================================
 const CASTLE_PAGES = [
-  { label: "Entrance",  file: "landing.html",            emoji: "🏰" },
+  { label: "Entrance",  file: "index.html",            emoji: "🏰" },
   { label: "Atrium",    file: "home.html",                emoji: "🏯" },
   { label: "About",     file: "about.html",               emoji: "👑" },
   { label: "Gallery",   file: "galleryentrance.html",     emoji: "⭐" },
