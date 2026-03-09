@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ヾ( ˃ᴗ˂ )◞ </title>
+  <title> info and settings </title>
 
   <!-- Describe your page — shows up in search results and browser tabs -->
-  <meta name="description" content="A Castle displaying all you need to know about Anouk Froitzheim">
+  <meta name="description" content="the info and settings room in Anouk Froitzheim's castle website">
+
+  <!-- Adds Favicon-->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
 
   <!-- Your styles -->
   <link rel="stylesheet" href="styles.css">
@@ -45,13 +48,8 @@
     <button class="main-button" id="myButton" type="button">Press Me!</button>
   </main>
 
-  <footer>
-    <small>&copy; <span id="year"></span> Anouk Froitzheim</small>
-  </footer>
 
   <script>
-    // Keep the copyright year current automatically
-    document.getElementById('year').textContent = new Date().getFullYear();
 
     const btn = document.getElementById('myButton');
     if (btn) {

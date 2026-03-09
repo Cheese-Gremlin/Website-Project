@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> about me </title>
+
+  <!-- Describe your page — shows up in search results and browser tabs -->
+  <meta name="description" content="all info needed about Anouk Froitzheim's">
+
+  <!-- Adds Favicon-->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+
+  <!-- Your styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    /* Keyboard users need to see where focus is */
+    :focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+
+    /* Respect users who prefer less motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1 class="title">Anouk's Castle</h1>
+  </header>
+
+  <nav aria-label="Primary">
+    <ul>
+      <li><a href="#" aria-current="page">Home</a></li>
+    </ul>
+  </nav>
+
+  <main id="main-content">
+    <div class="underline" aria-hidden="true"></div>
+    <p>oooOOOOooo! I wonder what does this buttom do?</p>
+    <button class="main-button" id="myButton" type="button">Press Me!</button>
+  </main>
+
+
+  <script>
+
+    const btn = document.getElementById('myButton');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        alert('Good Job! You pressed the button! Im so proud of you <3');
+      });
+    }
+  </script>
+
+  <!-- Your scripts -->
+  <script src="script.js"></script>
+
+</body>
+</html>

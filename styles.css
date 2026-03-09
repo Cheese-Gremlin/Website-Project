@@ -26,6 +26,14 @@ body {
   font-weight: 700;
 }
 
+.footer {
+  bottom: 10px;
+  left: 15pc;
+  font-weight: 50;
+  font-family: Courier, monospace;
+
+}
+
 /* Light underline under the title */
 .underline {
   width: 200px;
