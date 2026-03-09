@@ -1,3 +1,180 @@
+/* ================================================================
+   CASTLE BANNER NAVIGATION
+   Uses the actual pixel-art banner image (red_banner.png),
+   made transparent and embedded directly — no extra image files needed.
+
+   EASY EDITS — change these variables:
+   ─ --cb-scale       : scale everything (1 = 2x native, 1.5 = 3x native etc.)
+   ─ --cb-h-inactive  : how much of the banner shows when not active
+   ─ --cb-h-hover     : height on hover (slides to this)
+   ─ --cb-h-active    : full height for the current page banner
+   ─ --cb-gap         : gap between banners
+   ─ Pages            : edit CASTLE_PAGES array in script.js
+   ================================================================ */
+
+:root {
+  /* The source image is 53×59px. We display it at 2× for crisp pixels. */
+  /* At scale=1: banner is 106×118px. Scale=1.5 → 159×177px etc.       */
+  --cb-scale:      1;
+
+  --cb-img-w:      106px;   /* 53 × 2 = 106  (display width at 1×scale)  */
+  --cb-img-h:      118px;   /* 59 × 2 = 118  (full image height at 1×)   */
+
+  /* Heights of the visible banner (clips image from bottom)            */
+  --cb-h-inactive: 76px;    /* inactive: taper mostly hidden, just body  */
+  --cb-h-hover:    96px;    /* hover: slides to mid-length               */
+  --cb-h-active:   118px;   /* active: full banner, full taper visible   */
+
+  --cb-gap:        4px;     /* gap between banners                        */
+
+  /* Rod styling */
+  --cb-rod-h:      10px;
+  --cb-rod-color:  #7A4820;
+  --cb-rod-hi:     #C07840;  /* top highlight */
+  --cb-rod-sh:     #3A1A08;  /* bottom shadow  */
+}
+
+/* ── Nudge page body below the nav ───────────────────────── */
+body {
+  padding-top: calc(
+    (var(--cb-h-active) + var(--cb-rod-h) + 6px) * var(--cb-scale)
+  ) !important;
+}
+
+/* ── Nav wrapper — fixed, scales from top-left ────────────── */
+.castle-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  /* scale compensates width so nav still covers full viewport */
+  width: calc(100% / var(--cb-scale));
+  transform: scale(var(--cb-scale));
+  transform-origin: top left;
+}
+
+/* ── Wooden rod ───────────────────────────────────────────── */
+.castle-nav__rod {
+  width: 100%;
+  height: var(--cb-rod-h);
+  background: var(--cb-rod-color);
+  box-shadow:
+    inset 0  1px 0 0 var(--cb-rod-hi),
+    inset 0 -1px 0 0 var(--cb-rod-sh),
+          0  1px 0 0 var(--cb-rod-sh);
+  position: relative;
+  z-index: 2;
+  /* Pixel-art wood grain: subtle repeating 4px pattern */
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0,0,0,0.06) 3px,
+    rgba(0,0,0,0.06) 4px
+  );
+}
+
+/* ── Banner row ───────────────────────────────────────────── */
+.castle-nav__banners {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cb-gap);
+  padding: 0 calc(var(--cb-gap) * 2);
+  /* Overlap the rod so banner ring tops sit ON the rod */
+  margin-top: calc(var(--cb-rod-h) * -1);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Individual banner link ───────────────────────────────── */
+.castle-banner {
+  display: block;
+  text-decoration: none;
+  position: relative;
+  flex-shrink: 0;
+
+  /* Width matches scaled image */
+  width: var(--cb-img-w);
+
+  /* Height clips the image — controls how much banner "hangs" */
+  height: var(--cb-h-inactive);
+  overflow: hidden;
+
+  /* Smooth slide transition */
+  transition: height 0.15s ease;
+  /* Preserve pixel-art crispness */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.castle-banner:hover {
+  height: var(--cb-h-hover);
+}
+
+.castle-banner--active {
+  height: var(--cb-h-active) !important;
+}
+
+/* ── The actual banner image ──────────────────────────────── */
+.castle-banner__img {
+  display: block;
+  width: var(--cb-img-w);
+  height: var(--cb-img-h);  /* always full height; container clips it */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  /* No pointer events — the link handles clicks */
+  pointer-events: none;
+  /* Remove any default img margin/border */
+  border: none;
+  outline: none;
+}
+
+/* ── Text label overlay on the banner body ────────────────── */
+.castle-banner__label {
+  position: absolute;
+  /* Position in the rectangular body section (below rings, above taper) */
+  /* Rings: ~0..26px, Body: ~26..80px of 118px total */
+  top: 26px;
+  left: 0;
+  width: 100%;
+  height: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.castle-banner__emoji {
+  font-size: 18px;
+  line-height: 1;
+  display: block;
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,0.9))
+          drop-shadow(0 -1px 0 rgba(0,0,0,0.9));
+}
+
+.castle-banner__text {
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #FFD060;
+  text-shadow:
+     1px  1px 0 #000,
+    -1px  1px 0 #000,
+     1px -1px 0 #000,
+    -1px -1px 0 #000;
+  text-align: center;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ================================================================
+   END CASTLE BANNER NAVIGATION
+   ================================================================ */
+
 /* .home-page-castle-drawing {
   background-image: url('images/home-page-castle-drawing.png');
   background-size: cover;
