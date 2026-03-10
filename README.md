@@ -89,13 +89,13 @@ i found this out by telling Claude:
 claude answered: 
     The preview sidebar itself is blocking external resources. Let me rebuild the nav as a fully self-contained single HTML artifact with zero external dependencies — everything inline.
 after a bit more conversing it showed me this:
-![alt text](<Screenshot 2026-03-09 195823.png>)
+![alt text](images/menupt1.png)
 -the downside is that everything is internal now so that it could show in the sidebar and not run via images. this makes it hard to edit and understand so i will re-run my initial request but then paste things into here aka vstudio. 
 -i also dont like the look of the banners so i have drawn my own using pixel art which i can then show it and hopefully get a better result.
 
 prompt #2
     please create a menu in the top left corner of the page which allows the user to navigate between all html pages. please use the image 'row of red banners' as a direct reference and keep it in a pixel art style. I want each html to have its own 'banner' (shown in image) hanging down from the top of the page. when a user is on an html I want its banner hanging lower than the others. please make this easily editable and preferably keep it all in the script.js and styles file without adding every individual element to each html file
-    ![alt text](<row of red banners.png>)
+    ![alt text](<images/row of red banners.png>)
 response:
     Here's what was built and how it works:
     script.js — The single source of truth. At the top is a CASTLE_PAGES array — just edit that array to add, remove, or rename pages and their emojis. The script auto-detects which page is currently open (by filename), builds the banner HTML, and injects it as the very first element in <body> on every page automatically.
@@ -107,7 +107,7 @@ response:
     All HTML files — The old static <nav> was removed. No changes needed per-page; the nav appears everywhere as long as <script src="script.js"> is present (which all your files already had).
     The active page's banner hangs noticeably lower than the others, with a gold dot on the rod above it. Hovering inactive banners triggers a pixel-step sway animation.
 output:
-![alt text](<Screenshot 2026-03-09 212901.png>)
+![alt text](images/menupt2.png)
 opinion:
     -im very happy with how it explained everything to me and it made the banners very easily editable
     -it lost the pixelated style and each banner 'wobbles' when hovering over it. the last prompt was a lot closer to what i wanted so i will try to refine the current prompt
@@ -122,7 +122,7 @@ response:
     Active/current page — hangs at full length (--cb-h-active: 157px)
     Easy edits are all in styles.css at the top :root block — adjust --cb-scale to resize everything, or tweak the three height variables to change how far banners hang. Pages are still just the CASTLE_PAGES array in script.js.
 output:
-![alt text](<Screenshot 2026-03-09 214801.png>)
+![alt text](images/menupt3.png)
 opinion:
     -moves down now when hovering over un-selected banner but doesnt look like the given picture. I will try to reword the prompt to use specific pictures rather than 
 prompt #2.3:
@@ -140,11 +140,9 @@ response:
     --cb-h-active: 118px — full banner visible for the current page
     No HTML files were modified — the script injects everything on page load.
 output:
-![alt text](<Screenshot 2026-03-09 220942.png>)
+![alt text](images/menupt4.png)
 opinion:
     better but not perfect. i will need to draw each individual banner length and insert them as seperate images. i also need to make them at a higher resolution.
-
-
 
 
 
@@ -158,32 +156,27 @@ notes:
 
 landing page background image
 prompt:
-    can you please take the 'home-page-castle-drawing' image and turn it into a pixel art style using the mood board. I want it to be a grey stone medieval castle with moss and vines growing on it and a stained glass window above the door. make the door a wood colour.
-------iamages shown---------
+    can you please take the 'landing-page-castle-drawing' image and turn it into a pixel art style using the mood board. I want it to be a grey stone medieval castle with moss and vines growing on it and a stained glass window above the door. make the door a wood colour.
+![alt text](images/landing-page-castle-drawing.png)
+![alt text](<images/mood board.png>)
 response:
     Absolutely! I’ve taken your sketch and transformed it into a detailed pixel art scene. I included the grey stone walls with moss and vines, the wood-colored door, and the stained-glass window above the archway as requested. Let me know what you think of this initial scene or what you’d like to create next!
----------innsert iage-----
+![alt text](<images/landing image pt1.png>)
 opinion:
     -very happy with the outcome. it has exactly done what i asked and perfectly provided what i invisioned.
     -i want it to also have stained glass in the windows on the side and have the image be overall a little bigger so it can nicely fill a full sizes web-browser on both horizontal, vertical and mobile screens. 
 prompt 1.2:
     Awesome! I really like it and it's pretty much perfect. can you please also add stained glass to the widows on the right and left and make the sky a little brighter
 response:
-------insert image-----
+![alt text](<images/landing image pt2.png>)
 opinion:
     very good, keeps style and theme perfectly cohesive
 prompt 1.3:
-    awesome! can you please zoom out of the image a small bit so that more of the sides, sky and foreground can be seen
+    awesome! can you please zoom out of the image a small bit so that more of the sides, sky and foreground can be seen. and also make the courtyard grass.
 response:
--------insert image--------
-opinion: 
-    i like it but want the towers it made to be more syetrical and the 'courtyard' to be grass
-prompt 1.4:
-    wonderful. can you please make both towers the same so the image is a little more symmetrical. can you also make the courtyard grass instead of stone.
-response:
------insert image-----
+![alt text](<images/landing image pt3.png>)
 opinion:
-    very happy with it, it has the gemini logo in the corner which i dont reallly like so i may edit the immage to remove the logo or make it look like part of the plants
+    very happy with it, it has the gemini logo in the corner which i dont really like so i may edit the immage to remove the logo or make it look like part of the plants
 
 
 
