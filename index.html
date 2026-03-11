@@ -3,58 +3,300 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> Castle entrance </title>
-
-  <!-- Describe your page — shows up in search results and browser tabs -->
+  <title>Castle Entrance</title>
   <meta name="description" content="the landing page for Anouk Froitzheim's website">
-
-  <!-- Adds Favicon-->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
-
-  <!-- Your styles -->
   <link rel="stylesheet" href="styles.css">
 
   <style>
-    /* Keyboard users need to see where focus is */
+    /* ============================================================
+       ENTRANCE PAGE — DOOR TRANSITION
+       ============================================================
+
+       HOW IT WORKS:
+       - The page shows final_landing_image_1.png as the background (door closed)
+       - A transparent clickable zone sits over the door area
+       - On click: image swaps to frame 2 (doors cracking open), then frame 3 (doors wide open)
+       - Then the page fades to black and navigates to home.html
+
+       EASY TWEAKS:
+       - Door click area: edit #door-hotspot width/height/left/top (in %)
+       - Animation speed: edit the setTimeout delays in the JS below
+       - Fade duration: edit --fade-duration below
+       - Images used: edit the src values in the JS below
+       - Destination page: edit DESTINATION in the JS below
+    ============================================================ */
+
+    :root {
+      --fade-duration: 600ms; /* how long the black fade-out lasts */
+    }
+
+    /* Keyboard focus */
     :focus-visible {
-      outline: 2px solid currentColor;
+      outline: 2px solid #FFD060;
       outline-offset: 2px;
     }
 
-    /* Respect users who prefer less motion */
+    /* Respect reduced motion: skip animation, navigate instantly */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
       }
     }
+
+    /* ── Full-screen background image layer ── */
+    #scene {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+
+      /* Background image — swap this file to change the default scene */
+      background-image: url('final images/final landing image 1.png');
+      background-size: cover;
+      background-position: center;
+
+      transition: opacity 0.15s ease; /* quick flash between frames */
+    }
+
+    /* ── Black overlay for the fade-to-black at the end ── */
+    #fade-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      background: black;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--fade-duration) ease;
+    }
+    #fade-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ── Invisible clickable zone over the door ──
+       The button is positioned as a rectangle, then clipped to an arch shape
+       (flat bottom, rounded top) using clip-path.
+
+       POSITION TWEAKS:
+       - Move the door: edit left, top, width, height
+       - The arch curve height is controlled by --arch-curve (0% = flat, 50% = full semicircle)
+       - Uncomment the debug background line to see the full rect + clipped shape
+
+       HOW clip-path ARCH WORKS:
+       The polygon traces: bottom-left → bottom-right → right side up →
+       then a series of points along a semicircle for the top arch →
+       left side down → back to start.
+       The JS below auto-generates the arch polygon so you only need to
+       touch the position/size variables above.
+    ============================================================ */
+
+    #door-hotspot {
+      position: fixed;
+      z-index: 5;
+      cursor: pointer;
+
+      /* ── EDIT THESE to reposition/resize the door hit area ──
+         All values are % of viewport width/height                */
+      left:   36%;
+      top:    18%;
+      width:  28%;
+      height: 64%;
+
+      /* Arch curve: what fraction of the width becomes the semicircle radius.
+         50 = perfect semicircle (radius = half the button width).
+         Increase for a taller arch, decrease for a flatter one.            */
+      --arch-curve: 50;   /* percentage — edit this number only */
+
+      background: transparent;
+      border: none;
+      padding: 0;
+
+      /* clip-path is set dynamically by JS below so it always matches size */
+    }
+
+    /* Debug mode — uncomment to see the hotspot shape as a coloured overlay */
+    /* #door-hotspot { background: rgba(255, 0, 0, 0.3) !important; } */
+
+    /* Hover: golden glow follows the arch shape via drop-shadow on a pseudo */
+    #door-hotspot::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 208, 96, 0);
+      clip-path: inherit;           /* same arch shape as the button */
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+      pointer-events: none;
+    }
+    #door-hotspot:hover::after {
+      background: rgba(255, 208, 96, 0.12);
+      filter: drop-shadow(0 0 6px rgba(255, 208, 96, 0.7));
+    }
+
+    /* ── Page body — sits above scene but behind hotspot ── */
+    body {
+      position: relative;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      /* Override styles.css padding-top so the scene fills the whole viewport */
+      padding-top: 0 !important;
+    }
+
+    /* Optional: a small "click the door" hint label */
+    #door-hint {
+      position: fixed;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 6;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #FFD060;
+      text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      animation: pulse 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1 class="title">Anouk's Castle</h1>
-  </header>
+  <!-- Full-screen scene background -->
+  <div id="scene" aria-hidden="true"></div>
 
-  <main id="main-content">
-    <div class="underline" aria-hidden="true"></div>
-    <p>oooOOOOooo! I wonder what does this buttom do?</p>
-    <button class="main-button" id="myButton" type="button">Press Me!</button>
-  </main>
+  <!-- Black fade overlay (starts invisible) -->
+  <div id="fade-overlay" aria-hidden="true"></div>
 
+  <!-- Invisible button over the door -->
+  <button id="door-hotspot"
+          type="button"
+          aria-label="Open the castle doors and enter">
+  </button>
+
+  <!-- Small hint text -->
+  <p id="door-hint">✦ Click the door to enter ✦</p>
+
+  <!-- Castle banner navigation (injected by script.js) -->
+  <script src="script.js"></script>
 
   <script>
+    /* ============================================================
+       ARCH CLIP-PATH GENERATOR
+       Builds a polygon clip-path shaped like the door arch:
+       flat rectangular bottom + semicircular top.
+       Edit --arch-curve in the CSS, or left/top/width/height on
+       #door-hotspot to reposition/resize. No need to touch this JS.
+    ============================================================ */
+    (function applyArchClipPath() {
+      const btn = document.getElementById('door-hotspot');
 
-    const btn = document.getElementById('myButton');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        alert('Good Job! You pressed the button! Im so proud of you <3');
-      });
-    }
+      function buildArchPolygon() {
+        const curvePct = parseFloat(
+          getComputedStyle(btn).getPropertyValue('--arch-curve').trim()
+        ) || 50;
+
+        const rect  = btn.getBoundingClientRect();
+        const radius = rect.width / 2;           // px — semicircle radius
+        const archH  = (radius / rect.height) * 100; // % of button height
+
+        const ARC_STEPS = 24;
+        const cx = 50, cy = archH, rx = 50, ry = archH;
+
+        const arcPoints = [];
+        for (let i = 0; i <= ARC_STEPS; i++) {
+          const angle = Math.PI * (i / ARC_STEPS);
+          const x = cx + rx * Math.cos(Math.PI - angle);
+          const y = cy - ry * Math.sin(angle);
+          arcPoints.push(`${x.toFixed(2)}% ${y.toFixed(2)}%`);
+        }
+
+        const poly = [
+          `0% 100%`,
+          `100% 100%`,
+          `100% ${archH.toFixed(2)}%`,
+          ...arcPoints,
+          `0% ${archH.toFixed(2)}%`,
+        ].join(', ');
+
+        btn.style.clipPath = `polygon(${poly})`;
+      }
+
+      buildArchPolygon();
+      window.addEventListener('resize', buildArchPolygon);
+    })();
   </script>
 
-  <!-- Your scripts -->
-  <script src="script.js"></script>
+  <script>
+    /* ============================================================
+       DOOR ANIMATION SCRIPT
+       ============================================================
+       Edit these values to customise the transition:
+    ============================================================ */
+
+    // The three background images — door closed → cracking open → wide open
+    const FRAME_1 = 'final images/final landing image 1.png'; // closed (already the default)
+    const FRAME_2 = 'final images/final landing image 2.png'; // doors starting to open
+    const FRAME_3 = 'final images/final landing image 3.png'; // doors wide open
+
+    // How long (ms) each frame is shown before moving to the next
+    const FRAME_2_DURATION = 350; // time on "cracking open" frame
+    const FRAME_3_DURATION = 500; // time on "wide open" frame before fade
+
+    // Page to navigate to after the animation
+    const DESTINATION = 'home.html';
+
+    /* ── Logic — you probably don't need to edit below this line ── */
+
+    const scene    = document.getElementById('scene');
+    const overlay  = document.getElementById('fade-overlay');
+    const hotspot  = document.getElementById('door-hotspot');
+    const hint     = document.getElementById('door-hint');
+
+    // Preload the animation frames so there's no flicker on swap
+    [FRAME_2, FRAME_3].forEach(src => { new Image().src = src; });
+
+    hotspot.addEventListener('click', openDoors);
+    hotspot.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') openDoors();
+    });
+
+    function openDoors() {
+      // Prevent double-click
+      hotspot.disabled = true;
+      hint.style.display = 'none';
+
+      // Frame 2: doors cracking open
+      scene.style.backgroundImage = `url('${FRAME_2}')`;
+
+      setTimeout(() => {
+        // Frame 3: doors wide open
+        scene.style.backgroundImage = `url('${FRAME_3}')`;
+
+        setTimeout(() => {
+          // Fade to black, then navigate
+          overlay.classList.add('active');
+
+          // Wait for fade to finish, then go to home page
+          const fadeDuration = parseInt(
+            getComputedStyle(document.documentElement)
+              .getPropertyValue('--fade-duration')
+          ) || 600;
+
+          setTimeout(() => {
+            window.location.href = DESTINATION;
+          }, fadeDuration);
+
+        }, FRAME_3_DURATION);
+      }, FRAME_2_DURATION);
+    }
+  </script>
 
 </body>
 </html>

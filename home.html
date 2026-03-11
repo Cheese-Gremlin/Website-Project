@@ -3,58 +3,171 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> castle atrium </title>
-
-  <!-- Describe your page — shows up in search results and browser tabs -->
-  <meta name="description" content="the castle entrance room in Anouk Froitzheim's castle website">
-
-  <!-- Adds Favicon-->
+  <title>Castle Atrium</title>
+  <meta name="description" content="the castle atrium in Anouk Froitzheim's castle website">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
-
-  <!-- Your styles -->
   <link rel="stylesheet" href="styles.css">
 
   <style>
-    /* Keyboard users need to see where focus is */
+    /* ============================================================
+       HOME / ATRIUM PAGE
+       ============================================================
+
+       EASY TWEAKS:
+       - Background image: change url() in #scene below
+       - Fade-in duration: edit --fade-duration
+       - Content position: edit #content left/top/transform
+    ============================================================ */
+
+    :root {
+      --fade-duration: 700ms; /* how long the fade-in from black takes */
+    }
+
     :focus-visible {
-      outline: 2px solid currentColor;
+      outline: 2px solid #FFD060;
       outline-offset: 2px;
     }
 
-    /* Respect users who prefer less motion */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
       }
     }
+
+    /* ── Full-screen background scene ── */
+    #scene {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+
+      /* Home page background — swap this file to change the room */
+      background-image: url('images/home image pt1.png');
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* ── Black overlay — starts fully opaque, fades out on load ── */
+    #fade-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      background: black;
+      opacity: 1; /* starts black */
+      pointer-events: none;
+      transition: opacity var(--fade-duration) ease;
+    }
+    #fade-overlay.gone {
+      opacity: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      padding-top: 0 !important; /* scene is fixed, no need to push content */
+      background: transparent;
+    }
+
+    /* ── Clickable door nav labels (About Me / Project Gallery / Info/Settings)
+       These sit over the background image exactly where the image shows doors.
+       Adjust left/top/width/height (%) to reposition each one.          ── */
+
+    .door-link {
+      position: fixed;
+      z-index: 6;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+
+      /* Uncomment to debug positions: */
+      /* background: rgba(255,0,0,0.25); */
+    }
+    .door-link:hover .door-label {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+    .door-label {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFD060;
+      text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.85;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* Left door — "About Me" */
+    #door-about {
+      left: 5%;
+      top: 38%;
+      width: 20%;
+      height: 40%;
+    }
+
+    /* Centre arch — "Project Gallery" */
+    #door-gallery {
+      left: 32%;
+      top: 10%;
+      width: 36%;
+      height: 60%;
+    }
+
+    /* Right door — "Info/Settings" */
+    #door-info {
+      right: 5%;
+      top: 38%;
+      width: 20%;
+      height: 40%;
+    }
+
   </style>
 </head>
 <body>
 
-  <header>
-    <h1 class="title">Anouk's Castle</h1>
-  </header>
+  <!-- Full-screen background -->
+  <div id="scene" aria-hidden="true"></div>
 
-  <main id="main-content">
-    <div class="underline" aria-hidden="true"></div>
-    <p>oooOOOOooo! I wonder what does this buttom do?</p>
-    <button class="main-button" id="myButton" type="button">Press Me!</button>
-  </main>
+  <!-- Fade-in overlay (starts black, fades away) -->
+  <div id="fade-overlay" aria-hidden="true"></div>
 
+  <!-- Clickable door zones — edit href to point to your pages -->
+  <a id="door-about"   class="door-link" href="about.html"               aria-label="Go to About Me">
+    <span class="door-label">About Me</span>
+  </a>
+
+  <a id="door-gallery" class="door-link" href="galleryentrance.html"     aria-label="Go to Project Gallery">
+    <span class="door-label">Project Gallery</span>
+  </a>
+
+  <a id="door-info"    class="door-link" href="infoandsettingsroom.html" aria-label="Go to Info / Settings">
+    <span class="door-label">Info / Settings</span>
+  </a>
+
+  <!-- Castle banner nav -->
+  <script src="script.js"></script>
 
   <script>
-
-    const btn = document.getElementById('myButton');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        alert('Good Job! You pressed the button! Im so proud of you <3');
+    /* ============================================================
+       FADE-IN ON ARRIVAL
+       The page starts black (overlay opacity:1) and fades in.
+       No edits needed here unless you want to remove the fade.
+    ============================================================ */
+    window.addEventListener('load', () => {
+      // Small delay so the browser has painted the background first
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.getElementById('fade-overlay').classList.add('gone');
+        });
       });
-    }
+    });
   </script>
-
-  <!-- Your scripts -->
-  <script src="script.js"></script>
 
 </body>
 </html>
