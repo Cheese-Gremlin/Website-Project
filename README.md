@@ -69,14 +69,21 @@ all pages - pixelated art style
         - questions box?
         - sign up for news letter when new works are uploaded/ website is updated?
 
+⚠️404 error page -death screen?
+
+
 other stuff:
     - include some hidden rooms with fun secrets? random facts? mini games? puzzles?
     - mirror where user can make their avatar? (probably too ambitious as it will need to store user information somewhere...)
 
 
 
-# working with AI
+# coding with AI
 I use the Claude ai bot (sonnet 4.6)
+
+notes:
+    12/03/2026
+    really happy with how working with AI is going. I keep getting pleasantly surprised by how well it carries out certain tasks. I also really like how it explains everything and does the coding in a way that i can edit it (most likely due to me adding 'please make this easily editable') which helps me accomplish my goal of learning and understanding how the code works. I do notice that often it does/changes things i didnt ask it too which is kind of frustrating because you have to specify all the things that are supposed to stay the exact same.
 
 **asking it to make the navigation menu**
 I showed it all my HTML files, my styles.css and script.js file, and an image of an example banner ![alt text](images/blank-red-banner-in-pixel-art-style-vector.jpg) with the following prompt:
