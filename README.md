@@ -84,6 +84,9 @@ I use the Claude ai bot (sonnet 4.6)
 notes:
     12/03/2026
     really happy with how working with AI is going. I keep getting pleasantly surprised by how well it carries out certain tasks. I also really like how it explains everything and does the coding in a way that i can edit it (most likely due to me adding 'please make this easily editable') which helps me accomplish my goal of learning and understanding how the code works. I do notice that often it does/changes things i didnt ask it too which is kind of frustrating because you have to specify all the things that are supposed to stay the exact same.
+    19/03/26
+    im starting to get more and more frustrated with not being able to have full control over the entire design/ code as it is really difficult to change/ edit certain things without using the AI. (e.g. the 'button' that overlays the entrance door of the castle is not how i want it to be but I cant edit it to perfectly fit the door due to how its coded and my limited knowledge to how it works). This basically means thats if I use AI once, i have to use it for everything but it can never perfectly make what I want it to (this may be caused by me not communicating my wishes/ thoughts properly but it still sometimes doesnt seem to do what I ask it to or changes things without getting instruction to do so) The only solution I can think of is that I would need to learn how the code works (aka learn CSS, JS, HTML etc) so that I can make changes myself. If i would have to use AI, i would get it to code the base idea and then I go in with my coding skills and make everything perfect to how I want it. In a way this is a good but also bad thing as this means that the skill of coding is still very necessary and cant be replaced by AI (at least not soon?) but also means that I cant make this project exactly what I want it to be with my current skills set as I dont know how to code the things I need to.
+    Overall i find this frustrating and really limiting and wish we would be taught how to do these things rather than relying to AI. MNy solution is to find (free) online courses/websites that teach me the different languages and hopefully I wont be so limited in the future. Sadly that isnt possible for this project so I will need to do my best with what I can and just accept that I cant make it truly what I want it to be. 
 
 **asking it to make the navigation menu**
 I showed it all my HTML files, my styles.css and script.js file, and an image of an example banner ![alt text](images/blank-red-banner-in-pixel-art-style-vector.jpg) with the following prompt:
@@ -185,6 +188,94 @@ opinion:
     the shape isnt perfect but i will try to tweak it with the editable variables it gave me. I think its very cool that id added a 'debug shape' so that i can see what it looks like while i edit it, its very handy and shows that it takes consideration for my original request of making it easily editable. It also changed the button from only having a yellow outline to being a solid, slightly transparent yellow shape which i dont like as i prefer the outline and the 'glow effect' it would give when aligned with the door.
 
 
+**making the gallery corridor and side rooms**
+prompt 1:
+    please take these files and help me make the following:
+    i want the gallery to be a corridor that the user can walk down (using the scroll wheel to move back and forth). I want the walls to have picture frames on them that i can add images to. I want to be able to add the images on my own and I also want to be able to rearrange the picture frames using the code you make. I also want the corridor to have some doors here and there that the user can click on to enter into other rooms that also have picture frames on the walls. When the user clicks on a picture frame it will show the image across the entire screen including a small description and name of the picture (that i can add and edit using the code)
+    This is all supposed to work together so i can show off the art/ projects I have done. 
+    Please explain everything you do to me and make the code easy to understand and so that i can easily edit everything to make the layout of the picture frames and doors however i like. 
+    let me know if anything is unclear and you need more information.
+response:
+    This is a really fun project! Before I dive in, let me ask a couple of quick questions to make sure I build exactly what you need.Go ahead and answer those and I'll get building! Here's a quick overview of what I'm planning to make for you so you know what to expect:
+    The Gallery System will have:
+    gallery.html — the main corridor page with scroll-to-walk movement
+    gallery-room.html — a template for side rooms (you'll duplicate it for each room)
+    gallery-data.js — ⭐ the one file you edit to add images, change descriptions, rearrange frames, and configure doors. No touching the main code needed!
+    The corridor will use a CSS perspective/3D trick to give the feeling of walking down a hallway, with picture frames on the left and right walls. Scrolling moves you forward and backward. Doors will be clickable portals to your side rooms. Clicking a frame opens a fullscreen lightbox with the image name and description.
+questions it asked and my answers:
+    Q: What visual style should the gallery corridor have?
+    A: Stone dungeon / medieval castle (matches your castle theme)
+    Q: What kind of art/projects will you be displaying? (Select all that apply)
+    A: Mixed / all of the above
+    Q: How many rooms are you thinking to start with?
+    A: 2–3 side room
+response: 
+    Here's everything you need! Here's a full breakdown of what was built and how to use it:
+    📁 Your 7 Files
+    Put all of these in the same folder as your existing styles.css and script.js.
+    gallery.html = The main corridor page — link to this from your castle
+    gallery-styles.css = All the visual styling (stone walls, gold frames, torches)
+    gallery-engine.js = The engine that reads your data and builds everything — don't touch
+    gallery-data.js = ⭐ The only file you edit
+    gallery-room-studio.html = Room 1
+    gallery-room-archive.html = Room 2
+    gallery-room-workshop.html = Room 3
+    ✏️ How to add images
+    Open gallery-data.js and find the frames array. Each frame looks like this:
+        js{
+        src: "images/my-painting.png",  // ← path to your image file
+        name: "My Painting",
+        description: "Made this in 2024 using Procreate.",
+        position: "left",   // "left" or "right" wall
+        size: "large",      // "small", "medium", or "large"
+        },
+    Just fill in the src and you're done. Leave src: "" to show a placeholder.
+    🔀 How to rearrange frames
+    Just cut and paste entries in the array — the order in the list is the order down the corridor. Change position between "left" and "right" to move a frame to the other wall.
+    🚪 How to move doors
+    Each door has an afterFrame number — that's the index (starting at 0) of which frame it appears after:
+        js{ afterFrame: 1, side: "right", label: "The Studio", href: "gallery-room-studio.html" }
+    This door appears after the 2nd frame (index 1), on the right wall.
+    🏠 How to add more rooms
+    Duplicate any gallery-room-*.html file and rename it
+    Change the one line at the top: const ROOM_ID = "yourNewName";
+    Add a matching entry under ROOMS in gallery-data.js
+    Add a door in the corridor or another room pointing to it
+    🎮 Controls
+    Scroll wheel → walk forward/backward
+    Arrow keys → also works
+    Click a frame → fullscreen lightbox with name + description
+    Click a door → enter that room
+    Escape → close lightbox
+output:
+    ![alt text](<images/gallery corridor pt1.png>) <---- very zoomed out browser window to show the 'whole thing' it created
+opinion:
+    It appears that i was not at all clear enough on what i wanted it to look like and only focused on the functionality. 
+    The writing is barely readable as the contrast is way too small. I wanted it to be a '3D corridor' rather than a 2D top view which is what it has done. Additionally the entire art style is not at all what i wanted it to be. 
+    I am very happy with the functionality and mechanics of it and how it explained it all to me. The 'issues' that i have with its output are purely due to me not including it in the prompt so I will draw some inspo pictures for it to reference and see if it does a better job.
+prompt 1.2:
+    What's new — the perspective walk system
+    How the walking feels: The corridor image from your reference stays fixed on screen but scales up from its vanishing point (the dark archway in the centre) as you scroll. This means it genuinely looks like you're walking into the picture — the arches get bigger, the walls spread outward, exactly like real forward motion.
+    How frames appear on the walls: Every frame and door has a calculated "depth" in the corridor. The engine uses perspective maths to figure out where on screen each one should sit — close frames are large and near the edges of the screen, far ones are small and close to the centre vanishing point. As you walk forward, frames ahead of you grow and slide outward, ones behind you shrink and fade.
+    One important setup step 🖼️
+    Make sure gallery_corridor_image_pt1.jpg is in the same folder as all your other files — the CSS references it by name. If you rename the image, open gallery-styles.css and update this line:
+        cssbackground-image: url('gallery_corridor_image_pt1.jpg');
+    Two settings you can tune in gallery-engine.js
+    If the walking feels too fast or slow, find this line near the top and adjust it:
+        jsconst WALK_SPEED = 0.0008;  // lower = slower, higher = faster
+    If you want the zoom to go deeper or shallower into the image:
+        jsconst MAX_ZOOM = 3.2;  // higher number = zooms in further
+    Everything else still works exactly as before — gallery-data.js is the only file you need to edit to add images, rearrange frames, and configure doors.
+output:
+    ![alt text](<images/gallery corridor pt2.png>)
+opinion:
+    just... kind of terrible... 
+    i think the issue is that claude cant actually see what the image looks like and doesnt know where to put the picture frames and doors. It also doesnt 'walk' down the corridor how i had wanted it to but instead just zooms into the picture i provided. That is probably once again due to my prompt and that the AI just took the picture I gave it rather than making its own design.
+    There is also no way to exit once entering a room/door
+    im not sure how to fix this...
+
+
+---------------------------------------------------------------------------------------
 # creating images with AI 
 using gemini - nano banana 2 
 
@@ -244,6 +335,20 @@ output:
 ![alt text](<images/home image pt1.png>)
 opinion:
     this image is mainly generated for a placeholder image so i can keep working on the coding things. i like what it made but there are a couple things i would like to tweak. I will make a better reference image and then try again.
+
+
+**template of gallery corridor for claude to follow when coding**
+prompt:
+    hello
+    can you please take the image 'gallery corridor template' and turn it into a pixel art style using the mood board and 'landing image'. I want it to be a grey stone medieval castle with red carpets that have gold trim, metal chandeliers. make the doors a wood colour. make the squares on the wall empty picture frames. make the corridor fade to black at the very very end.
+files given:
+    ![alt text](<images/gallery coridor template.png>)
+    ![alt text](<images/home image pt1.png>)
+    ![alt text](<images/mood board.png>)
+output:
+    ![alt text](<images/gallery corridor image pt1.jpg>)
+opinion:
+    im quite happy with what it made. The layout of the door and picture frames isnt exactly what i wanted but it should be good enough to use as an 'inspiration picture' for claude to code the corridor. 
 
 
 

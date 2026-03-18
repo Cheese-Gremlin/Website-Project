@@ -1,0 +1,455 @@
+/* ================================================================
+   GALLERY STYLES — gallery-styles.css  (v2 — pixel art corridor)
+
+   Visual style: pixel-art castle corridor, first-person perspective.
+   The corridor image zooms/scales as the user walks forward.
+
+   Easy tweaks at the top in :root variables.
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap');
+
+:root {
+  /* ── Colour palette (pulled from the reference image) ─── */
+  --stone-dark:     #1a1c20;
+  --gold:           #c9933a;
+  --gold-light:     #e8c06a;
+  --gold-dark:      #7a5820;
+  --text-parchment: #e8d9b0;
+  --text-dim:       #a09070;
+  --torch-orange:   #e87820;
+  --torch-glow:     rgba(232, 120, 32, 0.22);
+}
+
+/* ── Body reset for gallery pages ─────────────────────────── */
+body {
+  background: #0d0e10 !important;
+  background-image: none !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important; /* override castle nav padding */
+  cursor: default;
+}
+
+/* ── Full-screen stage ─────────────────────────────────────── */
+.corridor-wrap {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #0d0e10;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   THE CORRIDOR BACKGROUND
+   The pixel-art corridor image is used as a background.
+   JavaScript updates the CSS variable --walk (0..1) which
+   drives the scale, making it look like you're zooming in.
+   ══════════════════════════════════════════════════════════════ */
+.corridor {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0; left: 0;
+
+  background-image: url('images/gallery corridor image pt1.jpg');
+  background-size: cover;
+  background-position: center 48%;
+  background-repeat: no-repeat;
+
+  /* Scale from the vanishing point (centre of image) */
+  transform-origin: 50% 48%;
+  will-change: transform;
+  /* JS sets this directly for performance — no CSS transition here */
+}
+
+/* Edge vignette — darkens the sides like a real corridor */
+.corridor::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 68% 62% at 50% 48%,
+    transparent 0%,
+    rgba(8, 8, 12, 0.4) 65%,
+    rgba(4, 4, 8, 0.88) 100%
+  );
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FRAMES LAYER
+   Sits above the corridor image. Frames are absolutely positioned
+   and their position/size is recalculated by JS as zoom changes,
+   so they always appear to "stick" to the walls in perspective.
+   ══════════════════════════════════════════════════════════════ */
+.frames-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ── One picture frame ─────────────────────────────────────── */
+.gallery-frame {
+  position: absolute;
+  cursor: pointer;
+  pointer-events: all;
+
+  /* Pixel-art style — no sub-pixel smoothing */
+  image-rendering: pixelated;
+
+  /* Gold triple-layer ornate border */
+  border: 5px solid var(--gold);
+  box-shadow:
+    inset 0 0 0 2px #7a5820,
+    inset 0 0 0 4px #e8c06a,
+    0 0 0 2px #7a5820,
+    0 4px 20px rgba(0,0,0,0.85),
+    0 0 30px var(--torch-glow);
+
+  background: #0e0c0a;
+  transition: box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.gallery-frame:hover {
+  box-shadow:
+    inset 0 0 0 2px #7a5820,
+    inset 0 0 0 4px #e8c06a,
+    0 0 0 2px #7a5820,
+    0 4px 20px rgba(0,0,0,0.85),
+    0 0 70px rgba(232, 120, 32, 0.6);
+  z-index: 20;
+}
+
+.gallery-frame__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-frame__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #1a1510 0px, #1a1510 8px,
+      #211c16 8px, #211c16 16px
+    );
+  color: var(--text-dim);
+  font-family: 'IM Fell English', serif;
+  font-size: 0.62rem;
+  text-align: center;
+  gap: 5px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.gallery-frame__placeholder-icon { font-size: 1.2rem; opacity: 0.4; }
+
+/* Name tag below each frame */
+.gallery-frame__nameplate {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gold-dark);
+  border: 1px solid var(--gold);
+  color: var(--gold-light);
+  font-family: 'IM Fell English', serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.07em;
+  padding: 1px 7px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.7);
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DOORS
+   CSS-drawn arched wooden doors matching the reference image.
+   Positioned and scaled by JS just like frames.
+   ══════════════════════════════════════════════════════════════ */
+.corridor-door {
+  position: absolute;
+  cursor: pointer;
+  pointer-events: all;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: filter 0.2s ease;
+}
+
+.corridor-door:hover { filter: brightness(1.2); }
+
+.corridor-door__label {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  color: var(--text-parchment);
+  font-size: 0.72rem;
+  margin-bottom: 5px;
+  text-shadow: 0 1px 4px #000, 0 0 10px var(--torch-orange);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* The door body */
+.corridor-door__door {
+  position: relative;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0px, transparent 12px,
+      rgba(0,0,0,0.18) 12px, rgba(0,0,0,0.18) 14px
+    ),
+    linear-gradient(160deg,
+      #a06830 0%,
+      #7a4a20 25%,
+      #5a3010 60%,
+      #2e1808 100%
+    );
+  border: 3px solid #1e1008;
+  /* Arched top matching reference image */
+  border-radius: 50% 50% 0 0 / 28% 28% 0 0;
+  box-shadow:
+    inset 3px 0 8px rgba(255,255,255,0.06),
+    inset -3px 0 8px rgba(0,0,0,0.5),
+    0 6px 24px rgba(0,0,0,0.85);
+}
+
+/* Iron door rings (two handles like the reference) */
+.corridor-door__door::before,
+.corridor-door__door::after {
+  content: '';
+  position: absolute;
+  top: 48%;
+  width: 14%;
+  height: 22%;
+  border: 3px solid #3a3a3a;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,255,255,0.05);
+}
+.corridor-door__door::before { left:  20%; }
+.corridor-door__door::after  { right: 20%; }
+
+/* Stone arch surround */
+.corridor-door__arch {
+  position: absolute;
+  inset: -12px -12px 0;
+  border: 8px solid #444952;
+  border-radius: 52% 52% 0 0 / 32% 32% 0 0;
+  border-bottom: none;
+  box-shadow:
+    inset 0 0 10px rgba(0,0,0,0.6),
+    0 0 0 4px #30343a,
+    0 0 0 6px #22262b;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ENTRANCE PANEL
+   Shown at the start, fades out once the user starts walking.
+   ══════════════════════════════════════════════════════════════ */
+.corridor__entrance {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 9vh;
+  pointer-events: none;
+  transition: opacity 0.7s ease;
+}
+
+.corridor__entrance.is-hidden { opacity: 0; }
+
+.corridor__entrance-text {
+  text-align: center;
+  padding: 24px 36px 28px;
+  background: rgba(8, 6, 4, 0.78);
+  border: 1px solid rgba(201, 147, 58, 0.35);
+  backdrop-filter: blur(2px);
+  max-width: 400px;
+}
+
+.corridor__title {
+  font-family: 'IM Fell English', serif;
+  font-size: 2.2rem;
+  color: var(--gold-light);
+  text-shadow: 0 0 28px var(--torch-orange), 0 2px 4px #000;
+  margin: 0 0 8px;
+  letter-spacing: 0.04em;
+}
+
+.corridor__subtitle {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  color: var(--text-parchment);
+  font-size: 0.95rem;
+  margin: 0 0 14px;
+  opacity: 0.82;
+}
+
+.corridor__hint {
+  font-family: 'IM Fell English', serif;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin: 0;
+  animation: hintpulse 2.5s ease-in-out infinite;
+}
+
+@keyframes hintpulse {
+  0%, 100% { opacity: 0.35; }
+  50%       { opacity: 1; }
+}
+
+/* Progress bar at very bottom of screen */
+.walk-progress {
+  position: fixed;
+  bottom: 0; left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold-light));
+  z-index: 200;
+  box-shadow: 0 0 6px var(--gold);
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   END OF CORRIDOR
+   ══════════════════════════════════════════════════════════════ */
+.corridor__end-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.corridor__end-overlay.is-visible { opacity: 1; }
+
+.corridor__end-text {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  color: var(--text-dim);
+  font-size: 1rem;
+  background: rgba(8,6,4,0.75);
+  padding: 12px 24px;
+  border: 1px solid rgba(201,147,58,0.2);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LIGHTBOX
+   ══════════════════════════════════════════════════════════════ */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(7, 6, 4, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: 40px;
+  box-sizing: border-box;
+}
+.lightbox.is-open { opacity: 1; pointer-events: all; }
+
+.lightbox__close {
+  position: absolute;
+  top: 20px; right: 24px;
+  background: none;
+  border: 1px solid var(--gold-dark);
+  color: var(--gold);
+  font-size: 1.2rem;
+  width: 36px; height: 36px;
+  cursor: pointer;
+  border-radius: 2px;
+  line-height: 1;
+  font-family: monospace;
+  transition: background 0.15s;
+}
+.lightbox__close:hover { background: var(--gold-dark); color: var(--gold-light); }
+
+.lightbox__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  max-width: 860px;
+  width: 100%;
+}
+
+.lightbox__frame-border {
+  border: 8px solid var(--gold);
+  box-shadow:
+    inset 0 0 0 3px #7a5820,
+    inset 0 0 0 6px #e8c06a,
+    0 0 0 2px #7a5820,
+    0 12px 50px rgba(0,0,0,0.9),
+    0 0 90px rgba(232,120,32,0.16);
+  background: #111;
+  max-height: 60vh;
+  display: flex;
+}
+
+.lightbox__img {
+  display: block;
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+.lightbox__placeholder-msg {
+  width: 300px; height: 180px;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 10px;
+  color: var(--text-dim);
+  font-family: 'IM Fell English', serif;
+  font-size: 0.85rem;
+  background: #0e0c0a;
+}
+
+.lightbox__info { text-align: center; max-width: 560px; }
+
+.lightbox__name {
+  font-family: 'IM Fell English', serif;
+  color: var(--gold-light);
+  font-size: 1.55rem;
+  margin: 0 0 8px;
+  text-shadow: 0 0 18px var(--torch-orange);
+}
+
+.lightbox__desc {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  color: var(--text-parchment);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin: 0;
+  opacity: 0.84;
+}
+
+/* ── Accessibility ─────────────────────────────────────────── */
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .corridor__hint      { animation: none; }
+  .corridor            { transition: none; }
+  .lightbox            { transition: none; }
+  .corridor__entrance  { transition: none; }
+  .corridor__end-overlay { transition: none; }
+}

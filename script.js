@@ -7,7 +7,7 @@ const CASTLE_PAGES = [
   { label: "Entrance",  file: "index.html",            emoji: "🏰" },
   { label: "Atrium",    file: "home.html",                emoji: "🏯" },
   { label: "About",     file: "about.html",               emoji: "👑" },
-  { label: "Gallery",   file: "galleryentrance.html",     emoji: "⭐" },
+  { label: "Gallery",   file: "gallery.html",     emoji: "⭐" },
   { label: "Info",      file: "infoandsettingsroom.html", emoji: "⚙️" },
 ];
 // ================================================================

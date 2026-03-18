@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Gallery — Anouk's Castle</title>
+  <meta name="description" content="The art gallery in Anouk's Castle">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
+
+  <!-- Your existing castle nav styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Gallery styles -->
+  <link rel="stylesheet" href="gallery-styles.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     gallery.html — The main corridor page.
+     Edit gallery-data.js to add images, rearrange, add doors.
+     Edit gallery-styles.css to tweak visual appearance.
+     Don't touch gallery-engine.js unless you know what you're doing!
+═══════════════════════════════════════════════════════════ -->
+
+<!-- The lightbox (fullscreen image viewer) -->
+<div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-modal="true">
+  <button class="lightbox__close" id="lightboxClose" aria-label="Close">✕</button>
+  <div class="lightbox__inner">
+    <div class="lightbox__frame-border">
+      <img class="lightbox__img" id="lightboxImg" src="" alt="">
+    </div>
+    <div class="lightbox__info">
+      <h2 class="lightbox__name" id="lightboxName"></h2>
+      <p class="lightbox__desc" id="lightboxDesc"></p>
+    </div>
+  </div>
+</div>
+
+<!-- The corridor: just the background image, zoomed by JS -->
+<div class="corridor-wrap" id="corridorWrap">
+  <div class="corridor" id="corridor"></div>
+  <!-- Frames layer injected by JS above this -->
+</div>
+
+<!-- Entrance title panel (fades out once you start walking) -->
+<div class="corridor__entrance" id="entrancePanel">
+  <div class="corridor__entrance-text">
+    <h1 id="galleryTitle" class="corridor__title"></h1>
+    <p  id="gallerySubtitle" class="corridor__subtitle"></p>
+    <p class="corridor__hint">↓ Scroll to walk forward</p>
+  </div>
+</div>
+
+<!-- End of corridor message -->
+<div class="corridor__end-overlay">
+  <p class="corridor__end-text">~ End of the Corridor ~</p>
+</div>
+
+<!-- Gold progress bar along the bottom -->
+<div class="walk-progress"></div>
+
+<!-- Data first, then engine, then castle nav -->
+<script src="gallery-data.js"></script>
+<script src="gallery-engine.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
