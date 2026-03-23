@@ -274,6 +274,69 @@ opinion:
     There is also no way to exit once entering a room/door
     im not sure how to fix this...
 
+----i took a couple days break to process this and retry with a fresh head and better prompt
+
+prompt 2:
+    can you please restart with my new instructions (don't use any previous instructions) but still use the files i provided previously.
+    Here are the new instructions:
+    Please make a 3D interactive room that the website user can walk through using WASD and the mouse to move and interact with things. 
+    This room is supposed to be a gallery which will act as a place on my website for me to showcase the work/projects I have done and for website users to look at in more detail. 
+    Everything is supposed to be medieval themed and match the 'mood board', 'final landing image' and the 'home image'. the user will enter the gallery by pressing on the back arch in the 'home image' so please make sure the entrance of the gallery matches.
+    I want the gallery to be a big room with a chandelier in the middle, red carpet on the ground and grey stone walls (just like in the images). 
+    I want the walls to have lot of picture frames on them. these picture frames are what I will be using to display the work/projects I have don't so i need to be able to edit what the picture frame is showing and the position of the picture frame. Next to each picture frame will be a little metal plaque which i can add the name of the image to. 
+    When the user presses on the image (using the mouse) , it will enlarge to show the image and a more detailed description. The image will still be in a picture frame and the name of the piece will be on a 'metal plaque', and the description will be written on a 'paper scroll' on the right side of the screen. 
+    I want it to be like a 3D game that the user can walk around in and look at my projects on the wall, as if the user was actually in an art gallery.
+    please make everything so that i can easily edit it and explain everything you do. 
+    please ask me any questions if you need more information.
+questions it asked:
+    Q: What should the room shape be?
+    A: One large square room (frames on all 4 walls)
+    Q: How should the user control movement?
+    A: WASD to walk + mouse always controls camera (pointer lock — like a first-person game)
+    Q: How many picture frames to start with? (you can always add more later)
+    A: for now as many can comfortable fit on the walls without looking crowded but I want to be able to add and remove frames and also decide where they are placed.
+response:
+    Here's everything — just 2 files this time, much cleaner than before!
+    What you've got
+    gallery.html — the full 3D first-person gallery. Drop it in your website folder alongside script.js and styles.css. It loads Three.js from CDN so no extra installs needed.
+    gallery-data.js — the only file you ever edit.
+    How to use it
+    Controls (once you click "Enter the Gallery"):
+    W A S D — walk forward/back/left/right
+    Mouse — look around (first-person)
+    Click a painting — opens the inspect view (big frame + metal plaque + paper scroll)
+    ESC — pause / release mouse
+    Editing frames in gallery-data.js
+    Each frame is one object. Here's what each field does:
+        js{
+        id:          "n1",              // unique internal name (don't repeat)
+        src:         "images/art.png", // your image file path — leave "" for placeholder
+        name:        "My Painting",    // shown on the metal plaque
+        description: "Made in 2024...", // shown on the paper scroll when clicked
+        wall:        "north",          // "north" | "south" | "east" | "west"
+        position:    -0.5,             // -1.0 (left end) → 0.0 (centre) → +1.0 (right end)
+        height:      0.0,              // 0 = eye level, + = higher, - = lower
+        size:        "large",          // "small" | "medium" | "large"
+        }
+    To add a frame: copy any block, paste at the end of the array, give it a unique id.
+    To rearrange: change wall and position.
+    To remove: delete the whole { ... } block.
+
+    Connecting it from your home page
+    In your home.html (the atrium image), make the centre arch a link:
+        html<a href="gallery.html"><!-- the arch area --></a>
+    The gallery starts with the player just inside the entrance arch, facing north into the room — exactly matching what a visitor would see stepping through that arch.
+output:
+    ![alt text](<images/gallery corridor pt3.1.png>)
+    ![alt text](<images/gallery corridor pt3.2.png>)
+opinion:
+    Im happy with the functions. the walking and movement works well. 
+    some issued: there is no way to exit nor get to the other pages (this is most likely due to me not adding all the files in again), the art style is not what i want it to be (i like the general theme but it doesnt have th pixel art style. I should have specified this), and its doesnt look exactly how i had envisioned (i want one big chandelier and not 3, the carpet should cover the entire floor, there currently is no ceiling, the entry is a rectangle and not a rounded arch)
+    I will have a look in the html and js files if i can make any of these changes manually. 
+
+
+
+
 
 ---------------------------------------------------------------------------------------
 # creating images with AI 

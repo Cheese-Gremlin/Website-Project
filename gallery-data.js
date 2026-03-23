@@ -1,226 +1,105 @@
 // ================================================================
-//  GALLERY DATA — THIS IS THE ONLY FILE YOU NEED TO EDIT!
-//  
-//  HOW TO ADD AN IMAGE:
-//    1. Put your image file in the same folder as these HTML files
-//    2. Add an entry to the MAIN_CORRIDOR or a ROOM's frames array
-//    3. Fill in the src, name, and description
+//  GALLERY DATA — gallery-data.js
+//  ----------------------------------------------------------------
+//  THIS IS THE ONLY FILE YOU NEED TO EDIT.
 //
-//  HOW TO REARRANGE FRAMES:
-//    Just change the "position" field! Options are:
-//      - "left"  → hangs on the left wall
-//      - "right" → hangs on the right wall
-//    Frames appear in the order they are listed (top to bottom = front to back)
+//  HOW TO ADD / EDIT A FRAME:
+//  ─────────────────────────────────────────────────────────────────
+//  Each frame is one object in the frames array below.
 //
-//  HOW TO ADD A DOOR:
-//    Add an entry to the "doors" array with the room file it links to
-//    Doors appear between frames — set "afterFrame" to the frame index
-//    (0 = before first frame, 1 = after first frame, etc.)
+//    id          – unique short name (no spaces), used internally
+//    src         – path to your image, e.g. "images/mywork.png"
+//                  Leave "" to show a placeholder
+//    name        – title shown on the metal plaque below the frame
+//    description – longer text shown on the paper scroll when clicked
+//    wall        – which wall to hang it on:
+//                    "north" = back wall (facing you as you walk in)
+//                    "south" = entrance wall (behind you at start)
+//                    "east"  = right wall
+//                    "west"  = left wall
+//    position    – where along the wall:
+//                    -1.0 = far left end of that wall
+//                     0.0 = dead centre
+//                    +1.0 = far right end
+//                  Tip: keep ~0.35+ spacing between frames on the same wall
+//    height      – vertical nudge (0 = eye level, + = higher, - = lower)
+//    size        – "small" | "medium" | "large"
 //
-//  HOW TO CHANGE FRAME SIZE:
-//    Set "size" to "small", "medium", or "large"
-//
-//  HOW TO ADD MORE ROOMS:
-//    1. Duplicate gallery-room.html and rename it (e.g. "room-sculpture.html")
-//    2. Add a new object to the ROOMS array below with that filename
-//    3. Add a door in the main corridor or another room pointing to it
+//  HOW TO REARRANGE: just change wall / position / height values.
+//  HOW TO ADD MORE:  copy any block, paste at end of array, give new id.
+//  HOW TO REMOVE:    delete its { ... } block.
 // ================================================================
 
+const GALLERY_CONFIG = {
 
-// ── MAIN CORRIDOR ─────────────────────────────────────────────────────────────
-// This is what appears in gallery.html (the long hallway you scroll through)
+  // Room intro text (shown in the HUD at the start)
+  roomTitle:    "The Gallery",
+  roomSubtitle: "WASD to walk  •  Mouse to look  •  Click a frame to inspect",
 
-const MAIN_CORRIDOR = {
-
-  // The title shown at the entrance of the corridor
-  title: "The Gallery",
-  subtitle: "Welcome, wanderer. These halls hold many wonders.",
-
-  // Picture frames on the corridor walls
-  // Each frame: { src, name, description, position, size }
   frames: [
+
+    // ══ NORTH WALL (back wall) ════════════════════════════════
     {
-      src: "",           // ← path to your image file, e.g. "images/my-art.png"
-      name: "First Work",
-      description: "This is where your description goes. Tell the viewer about this piece — when you made it, what inspired you, what tools you used.",
-      position: "left",  // "left" or "right"
-      size: "large",     // "small", "medium", or "large"
+      id: "n1", src: "", name: "First Work",
+      description: "Describe this piece here — what it is, when you made it, what tools or techniques you used. This text appears on the scroll when a visitor clicks the frame.",
+      wall: "north", position: -0.62, height: 0.0, size: "large",
     },
     {
-      src: "",
-      name: "Second Work",
-      description: "Another piece in your collection. Replace the src with a path to your image.",
-      position: "right",
-      size: "medium",
+      id: "n2", src: "", name: "Second Work",
+      description: "Description for your second piece. Replace src with the path to your image file.",
+      wall: "north", position: 0.0, height: 0.0, size: "large",
     },
     {
-      src: "",
-      name: "Third Work",
-      description: "A third piece. You can keep adding as many as you like!",
-      position: "left",
-      size: "medium",
+      id: "n3", src: "", name: "Third Work",
+      description: "Description for your third piece.",
+      wall: "north", position: 0.62, height: 0.0, size: "large",
+    },
+
+    // ══ EAST WALL (right wall) ════════════════════════════════
+    {
+      id: "e1", src: "", name: "Fourth Work",
+      description: "A piece on the right wall.",
+      wall: "east", position: -0.58, height: 0.0, size: "medium",
     },
     {
-      src: "",
-      name: "Fourth Work",
-      description: "Placed on the right wall.",
-      position: "right",
-      size: "large",
+      id: "e2", src: "", name: "Fifth Work",
+      description: "Centre of the right wall.",
+      wall: "east", position: 0.0, height: 0.0, size: "large",
     },
     {
-      src: "",
-      name: "Fifth Work",
-      description: "Almost at the end of the corridor.",
-      position: "left",
-      size: "small",
+      id: "e3", src: "", name: "Sixth Work",
+      description: "Right side of the right wall.",
+      wall: "east", position: 0.58, height: 0.0, size: "medium",
+    },
+
+    // ══ WEST WALL (left wall) ═════════════════════════════════
+    {
+      id: "w1", src: "", name: "Seventh Work",
+      description: "A piece on the left wall.",
+      wall: "west", position: -0.58, height: 0.0, size: "medium",
     },
     {
-      src: "",
-      name: "Sixth Work",
-      description: "The last frame in the main corridor.",
-      position: "right",
-      size: "medium",
+      id: "w2", src: "", name: "Eighth Work",
+      description: "Centre of the left wall.",
+      wall: "west", position: 0.0, height: 0.0, size: "large",
     },
+    {
+      id: "w3", src: "", name: "Ninth Work",
+      description: "Right side of the left wall.",
+      wall: "west", position: 0.58, height: 0.0, size: "medium",
+    },
+
+    // ══ SOUTH WALL (entrance wall — centre has the arch) ══════
+    {
+      id: "s1", src: "", name: "Tenth Work",
+      description: "Entrance wall, left of the arch.",
+      wall: "south", position: -0.70, height: 0.0, size: "medium",
+    },
+    {
+      id: "s2", src: "", name: "Eleventh Work",
+      description: "Entrance wall, right of the arch.",
+      wall: "south", position: 0.70, height: 0.0, size: "medium",
+    },
+
   ],
-
-  // Doors that appear between frames in the corridor
-  // afterFrame: the door appears AFTER frame at this index (0-based)
-  //   e.g. afterFrame: 1 → appears after the 2nd frame
-  // side: which wall the door is on ("left" or "right")
-  // label: text shown above the door
-  // href: which room file this door leads to
-  doors: [
-    {
-      afterFrame: 1,     // ← appears after the 2nd frame
-      side: "right",
-      label: "The Studio",
-      href: "gallery-room-studio.html",
-    },
-    {
-      afterFrame: 3,     // ← appears after the 4th frame
-      side: "left",
-      label: "The Archive",
-      href: "gallery-room-archive.html",
-    },
-    {
-      afterFrame: 5,     // ← appears after the last frame (end of corridor)
-      side: "right",
-      label: "The Workshop",
-      href: "gallery-room-workshop.html",
-    },
-  ],
-};
-
-
-// ── ROOMS ─────────────────────────────────────────────────────────────────────
-// Each room is its own page. Duplicate gallery-room.html for each room.
-// The "id" here must match the ROOM_ID variable at the top of that room's HTML file.
-
-const ROOMS = {
-
-  // ── Room 1: The Studio ───────────────────────────────────────────
-  "studio": {
-    title: "The Studio",
-    subtitle: "Where ideas are born.",
-    frames: [
-      {
-        src: "",
-        name: "Studio Piece One",
-        description: "A work from the studio. Add your image and description here.",
-        position: "left",
-        size: "large",
-      },
-      {
-        src: "",
-        name: "Studio Piece Two",
-        description: "Another studio work.",
-        position: "right",
-        size: "medium",
-      },
-      {
-        src: "",
-        name: "Studio Piece Three",
-        description: "A third studio piece.",
-        position: "left",
-        size: "medium",
-      },
-    ],
-    // Doors back out or to other rooms
-    doors: [
-      {
-        afterFrame: 2,
-        side: "right",
-        label: "← Back to Corridor",
-        href: "gallery.html",
-      },
-    ],
-  },
-
-  // ── Room 2: The Archive ──────────────────────────────────────────
-  "archive": {
-    title: "The Archive",
-    subtitle: "Older works, preserved.",
-    frames: [
-      {
-        src: "",
-        name: "Archived Piece One",
-        description: "An older work from the archive.",
-        position: "right",
-        size: "large",
-      },
-      {
-        src: "",
-        name: "Archived Piece Two",
-        description: "Another archived piece.",
-        position: "left",
-        size: "medium",
-      },
-      {
-        src: "",
-        name: "Archived Piece Three",
-        description: "Preserved for posterity.",
-        position: "right",
-        size: "small",
-      },
-    ],
-    doors: [
-      {
-        afterFrame: 2,
-        side: "left",
-        label: "← Back to Corridor",
-        href: "gallery.html",
-      },
-    ],
-  },
-
-  // ── Room 3: The Workshop ─────────────────────────────────────────
-  "workshop": {
-    title: "The Workshop",
-    subtitle: "Projects in progress.",
-    frames: [
-      {
-        src: "",
-        name: "Workshop Project One",
-        description: "A project from the workshop. Could be a coding project, a WIP, anything.",
-        position: "left",
-        size: "large",
-      },
-      {
-        src: "",
-        name: "Workshop Project Two",
-        description: "Another project.",
-        position: "right",
-        size: "large",
-      },
-    ],
-    doors: [
-      {
-        afterFrame: 1,
-        side: "left",
-        label: "← Back to Corridor",
-        href: "gallery.html",
-      },
-    ],
-  },
-
 };

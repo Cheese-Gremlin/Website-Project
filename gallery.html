@@ -4,64 +4,1163 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Gallery — Anouk's Castle</title>
-  <meta name="description" content="The art gallery in Anouk's Castle">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=MedievalSharp&display=swap" rel="stylesheet">
 
-  <!-- Your existing castle nav styles -->
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Reset & base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  <!-- Gallery styles -->
-  <link rel="stylesheet" href="gallery-styles.css">
+    body {
+      background: #0a0a0c;
+      font-family: 'IM Fell English', serif;
+      overflow: hidden;
+      width: 100vw; height: 100vh;
+      cursor: crosshair;
+    }
+
+    /* ── Three.js canvas ─────────────────────────────────────── */
+    #gallery-canvas {
+      position: fixed;
+      inset: 0;
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* ── Crosshair ────────────────────────────────────────────── */
+    #crosshair {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px; height: 20px;
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0.7;
+    }
+    #crosshair::before, #crosshair::after {
+      content: '';
+      position: absolute;
+      background: rgba(232,192,100,0.8);
+    }
+    #crosshair::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
+    #crosshair::after  { width: 100%; height: 2px; top: 50%; transform: translateY(-50%); }
+
+    /* ── Start / click-to-play overlay ───────────────────────── */
+    #start-overlay {
+      position: fixed; inset: 0;
+      background: rgba(8,6,4,0.88);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 500;
+      gap: 18px;
+      transition: opacity 0.6s ease;
+    }
+    #start-overlay.hidden { opacity: 0; pointer-events: none; }
+
+    #start-overlay h1 {
+      font-family: 'MedievalSharp', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      color: #e8c06a;
+      text-shadow: 0 0 40px #e87820, 0 2px 6px #000;
+      letter-spacing: 0.06em;
+    }
+    #start-overlay p {
+      color: #c8b898;
+      font-style: italic;
+      font-size: 1.05rem;
+      text-align: center;
+      max-width: 420px;
+      line-height: 1.7;
+    }
+    #start-btn {
+      margin-top: 8px;
+      padding: 14px 48px;
+      background: none;
+      border: 2px solid #c9933a;
+      color: #e8c06a;
+      font-family: 'IM Fell English', serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      text-transform: uppercase;
+    }
+    #start-btn:hover {
+      background: rgba(201,147,58,0.15);
+      box-shadow: 0 0 24px rgba(232,120,32,0.4);
+    }
+    .controls-hint {
+      display: flex; gap: 32px; margin-top: 8px;
+    }
+    .controls-hint span {
+      color: #a09070;
+      font-size: 0.82rem;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .key {
+      display: inline-block;
+      padding: 2px 7px;
+      border: 1px solid #6a5a40;
+      background: rgba(80,60,30,0.4);
+      border-radius: 3px;
+      font-family: monospace;
+      color: #e8c06a;
+      font-size: 0.8rem;
+    }
+
+    /* ── Paused overlay ──────────────────────────────────────── */
+    #pause-overlay {
+      position: fixed; inset: 0;
+      background: rgba(8,6,4,0.75);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 400;
+      gap: 14px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    #pause-overlay.visible { opacity: 1; pointer-events: all; }
+    #pause-overlay h2 {
+      font-family: 'MedievalSharp', serif;
+      color: #e8c06a;
+      font-size: 2rem;
+      text-shadow: 0 0 20px #e87820;
+    }
+    #pause-overlay p { color: #c8b898; font-style: italic; }
+
+    /* ── Inspect overlay (frame clicked) ────────────────────── */
+    #inspect-overlay {
+      position: fixed; inset: 0;
+      background: rgba(5,4,3,0.92);
+      z-index: 300;
+      display: flex; align-items: center; justify-content: center;
+      gap: 40px;
+      padding: 40px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #inspect-overlay.open { opacity: 1; pointer-events: all; }
+
+    /* Big frame on the left */
+    #inspect-frame {
+      flex-shrink: 0;
+      position: relative;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 14px;
+    }
+
+    #inspect-img-wrap {
+      border: 8px solid #c9933a;
+      box-shadow:
+        inset 0 0 0 3px #7a5820,
+        inset 0 0 0 6px #e8c06a,
+        0 0 0 2px #7a5820,
+        0 0 60px rgba(232,120,32,0.25),
+        0 20px 60px rgba(0,0,0,0.9);
+      background: #0e0c0a;
+      max-width: min(50vw, 520px);
+      max-height: 65vh;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    #inspect-img {
+      display: block;
+      max-width: 100%;
+      max-height: 65vh;
+      object-fit: contain;
+    }
+
+    /* Placeholder when no image */
+    #inspect-placeholder {
+      width: 360px; height: 280px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px;
+      background: repeating-linear-gradient(
+        45deg, #1a1510 0, #1a1510 10px, #211c16 10px, #211c16 20px
+      );
+      color: #6a5a40;
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+    #inspect-placeholder span:first-child { font-size: 2.5rem; opacity: 0.35; }
+
+    /* Metal plaque below frame */
+    #inspect-plaque {
+      background: linear-gradient(135deg, #5a4020, #8a6030, #5a4020);
+      border: 2px solid #c9933a;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        0 4px 16px rgba(0,0,0,0.7),
+        0 0 20px rgba(201,147,58,0.2);
+      padding: 8px 32px;
+      text-align: center;
+    }
+    #inspect-plaque-name {
+      font-family: 'IM Fell English', serif;
+      color: #e8c06a;
+      font-size: 1.1rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+
+    /* Paper scroll on the right */
+    #inspect-scroll {
+      flex-shrink: 0;
+      width: min(320px, 32vw);
+      position: relative;
+      display: flex; flex-direction: column;
+    }
+
+    /* Scroll top curl */
+    .scroll-curl-top, .scroll-curl-bottom {
+      width: 100%;
+      height: 40px;
+      background: linear-gradient(180deg, #c8a060 0%, #d4aa70 50%, #b89050 100%);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .scroll-curl-top {
+      border-radius: 6px 6px 0 0;
+      background: linear-gradient(180deg, #a07840 0%, #c8a060 60%, #d4aa70 100%);
+    }
+    .scroll-curl-bottom {
+      border-radius: 0 0 6px 6px;
+      background: linear-gradient(0deg, #a07840 0%, #c8a060 60%, #d4aa70 100%);
+    }
+
+    /* Scroll curl shadow lines */
+    .scroll-curl-top::before, .scroll-curl-top::after,
+    .scroll-curl-bottom::before, .scroll-curl-bottom::after {
+      content: '';
+      position: absolute;
+      left: 8%; right: 8%;
+      height: 2px;
+      background: rgba(80,50,20,0.3);
+    }
+    .scroll-curl-top::before    { top: 8px; }
+    .scroll-curl-top::after     { top: 18px; }
+    .scroll-curl-bottom::before { bottom: 18px; }
+    .scroll-curl-bottom::after  { bottom: 8px; }
+
+    /* Scroll body */
+    .scroll-body {
+      background: linear-gradient(180deg, #f0e0b8, #e8d4a0, #f0e0b8);
+      padding: 20px 24px;
+      border-left: 3px solid #b89050;
+      border-right: 3px solid #b89050;
+      min-height: 200px;
+      overflow-y: auto;
+      max-height: 55vh;
+    }
+
+    .scroll-body h3 {
+      font-family: 'MedievalSharp', serif;
+      color: #4a2e10;
+      font-size: 1rem;
+      margin-bottom: 14px;
+      text-align: center;
+      border-bottom: 1px solid rgba(100,60,20,0.3);
+      padding-bottom: 10px;
+    }
+    .scroll-body p {
+      color: #3a2810;
+      font-size: 0.9rem;
+      line-height: 1.75;
+      font-style: italic;
+    }
+
+    /* Close button */
+    #inspect-close {
+      position: absolute;
+      top: 16px; right: 20px;
+      background: none;
+      border: 1px solid #7a5820;
+      color: #c9933a;
+      font-size: 1.2rem;
+      width: 36px; height: 36px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.15s;
+      z-index: 10;
+    }
+    #inspect-close:hover { background: rgba(122,88,32,0.3); }
+
+    /* ── Mini HUD (top of screen) ────────────────────────────── */
+    #hud {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 10px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      pointer-events: none;
+      z-index: 50;
+    }
+    #hud-title {
+      font-family: 'MedievalSharp', serif;
+      color: rgba(232,192,100,0.7);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+    }
+    #hud-hint {
+      color: rgba(160,144,112,0.6);
+      font-style: italic;
+      font-size: 0.75rem;
+    }
+
+    /* ── Interaction prompt (hover over frame) ───────────────── */
+    #interact-prompt {
+      position: fixed;
+      bottom: 60px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10,8,5,0.8);
+      border: 1px solid rgba(201,147,58,0.5);
+      color: #e8c06a;
+      font-style: italic;
+      font-size: 0.85rem;
+      padding: 8px 20px;
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    #interact-prompt.visible { opacity: 1; }
+
+    /* ── ESC hint ─────────────────────────────────────────────── */
+    #esc-hint {
+      position: fixed;
+      bottom: 16px; left: 50%;
+      transform: translateX(-50%);
+      color: rgba(160,144,112,0.5);
+      font-size: 0.72rem;
+      pointer-events: none;
+      z-index: 50;
+    }
+  </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════
-     gallery.html — The main corridor page.
-     Edit gallery-data.js to add images, rearrange, add doors.
-     Edit gallery-styles.css to tweak visual appearance.
-     Don't touch gallery-engine.js unless you know what you're doing!
-═══════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════
+     gallery.html  —  The 3D first-person gallery
+     
+     You do NOT edit this file for content.
+     → Edit gallery-data.js to add images, names, descriptions,
+       and to position frames on the walls.
+     
+     Controls:
+       WASD / Arrow keys  — walk
+       Mouse              — look around (after clicking to start)
+       Click a frame      — inspect it (name + description)
+       ESC                — exit inspect / release pointer
+═══════════════════════════════════════════════════════════════ -->
 
-<!-- The lightbox (fullscreen image viewer) -->
-<div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-modal="true">
-  <button class="lightbox__close" id="lightboxClose" aria-label="Close">✕</button>
-  <div class="lightbox__inner">
-    <div class="lightbox__frame-border">
-      <img class="lightbox__img" id="lightboxImg" src="" alt="">
+<!-- Canvas for Three.js -->
+<canvas id="gallery-canvas"></canvas>
+
+<!-- Crosshair -->
+<div id="crosshair"></div>
+
+<!-- HUD -->
+<div id="hud">
+  <span id="hud-title">⭐ The Gallery</span>
+  <span id="hud-hint">ESC to pause</span>
+</div>
+
+<!-- Start overlay -->
+<div id="start-overlay">
+  <h1 id="start-title">The Gallery</h1>
+  <p id="start-sub">Enter and explore the works within these ancient walls.</p>
+  <div class="controls-hint">
+    <span><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> Walk</span>
+    <span>🖱️ Look</span>
+    <span>Click frame to inspect</span>
+  </div>
+  <button id="start-btn">Enter the Gallery</button>
+</div>
+
+<!-- Pause overlay -->
+<div id="pause-overlay">
+  <h2>Paused</h2>
+  <p>Click anywhere to resume</p>
+</div>
+
+<!-- Inspect overlay (shown when a frame is clicked) -->
+<div id="inspect-overlay">
+  <button id="inspect-close" aria-label="Close">✕</button>
+
+  <div id="inspect-frame">
+    <div id="inspect-img-wrap">
+      <img id="inspect-img" src="" alt="">
+      <div id="inspect-placeholder">
+        <span>🖼️</span>
+        <span>No image added yet.<br>Add src in gallery-data.js</span>
+      </div>
     </div>
-    <div class="lightbox__info">
-      <h2 class="lightbox__name" id="lightboxName"></h2>
-      <p class="lightbox__desc" id="lightboxDesc"></p>
+    <div id="inspect-plaque">
+      <div id="inspect-plaque-name">Untitled</div>
     </div>
+  </div>
+
+  <div id="inspect-scroll">
+    <div class="scroll-curl-top"></div>
+    <div class="scroll-body">
+      <h3 id="scroll-title">About this work</h3>
+      <p id="scroll-desc">No description provided.</p>
+    </div>
+    <div class="scroll-curl-bottom"></div>
   </div>
 </div>
 
-<!-- The corridor: just the background image, zoomed by JS -->
-<div class="corridor-wrap" id="corridorWrap">
-  <div class="corridor" id="corridor"></div>
-  <!-- Frames layer injected by JS above this -->
-</div>
+<!-- Interaction prompt -->
+<div id="interact-prompt">Click to inspect</div>
 
-<!-- Entrance title panel (fades out once you start walking) -->
-<div class="corridor__entrance" id="entrancePanel">
-  <div class="corridor__entrance-text">
-    <h1 id="galleryTitle" class="corridor__title"></h1>
-    <p  id="gallerySubtitle" class="corridor__subtitle"></p>
-    <p class="corridor__hint">↓ Scroll to walk forward</p>
-  </div>
-</div>
+<!-- ESC hint -->
+<div id="esc-hint">ESC — pause / release mouse</div>
 
-<!-- End of corridor message -->
-<div class="corridor__end-overlay">
-  <p class="corridor__end-text">~ End of the Corridor ~</p>
-</div>
+<!-- Three.js from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-<!-- Gold progress bar along the bottom -->
-<div class="walk-progress"></div>
-
-<!-- Data first, then engine, then castle nav -->
+<!-- Your gallery data -->
 <script src="gallery-data.js"></script>
-<script src="gallery-engine.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     GALLERY ENGINE
+     You don't need to touch anything below this line.
+     All your customisation is in gallery-data.js.
+═══════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  // ── Config ──────────────────────────────────────────────────────
+  const CFG = GALLERY_CONFIG;
+
+  // Room dimensions (metres)
+  const ROOM_W = 28;   // width  (east–west)
+  const ROOM_H = 8;    // height
+  const ROOM_D = 28;   // depth  (north–south)
+
+  // Player
+  const PLAYER_HEIGHT = 1.7;
+  const PLAYER_SPEED  = 8.0;   // m/s — increase to walk faster
+  const MOUSE_SENS    = 0.0018;
+
+  // Frame base sizes (width × height in metres)
+  const FRAME_SIZES = {
+    small:  [1.0, 0.78],
+    medium: [1.5, 1.15],
+    large:  [2.1, 1.6],
+  };
+  const FRAME_DEPTH      = 0.06;  // frame extrusion depth
+  const FRAME_WALL_GAP   = 0.04;  // how far frame sits off the wall
+  const FRAME_GOLD       = 0xc9933a;
+  const FRAME_GOLD_INNER = 0x7a5820;
+  const PLAQUE_W         = 0.7;
+  const PLAQUE_H         = 0.12;
+  const PLAQUE_OFFSET_Y  = 0.12;  // below frame bottom edge
+
+  // ── Three.js setup ──────────────────────────────────────────────
+  const canvas   = document.getElementById('gallery-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
+  renderer.toneMapping       = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.9;
+  renderer.outputEncoding    = THREE.sRGBEncoding;
+
+  const scene  = new THREE.Scene();
+  scene.fog    = new THREE.FogExp2(0x1a1510, 0.045);
+  scene.background = new THREE.Color(0x1a1510);
+
+  const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 80);
+  // Start near south wall, facing north (into the room)
+  camera.position.set(0, PLAYER_HEIGHT, ROOM_D / 2 - 2);
+  camera.rotation.order = 'YXZ';
+
+  const loader = new THREE.TextureLoader();
+
+  // ── Resize ──────────────────────────────────────────────────────
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // ════════════════════════════════════════════════════════════════
+  //  TEXTURE HELPERS — CSS canvas textures for stone, carpet, etc.
+  // ════════════════════════════════════════════════════════════════
+
+  function makeStoneTexture(w = 512, h = 512) {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+
+    // Base stone colour
+    ctx.fillStyle = '#5a6070';
+    ctx.fillRect(0, 0, w, h);
+
+    // Draw brick pattern
+    const bW = 80, bH = 40;
+    ctx.strokeStyle = 'rgba(30,34,42,0.85)';
+    ctx.lineWidth = 3;
+
+    for (let row = 0; row * bH < h + bH; row++) {
+      const offset = (row % 2) * (bW / 2);
+      for (let col = -1; col * bW < w + bW; col++) {
+        const x = col * bW + offset;
+        const y = row * bH;
+        ctx.strokeRect(x + 2, y + 2, bW - 4, bH - 4);
+
+        // Slight colour variation per brick
+        const v = (Math.random() * 18 - 9) | 0;
+        ctx.fillStyle = `rgba(${90+v},${96+v},${112+v},0.25)`;
+        ctx.fillRect(x + 3, y + 3, bW - 6, bH - 6);
+      }
+    }
+
+    // Add some ivy patches (green smudges)
+    for (let i = 0; i < 12; i++) {
+      const gx = Math.random() * w;
+      const gy = Math.random() * h;
+      const gr = ctx.createRadialGradient(gx, gy, 0, gx, gy, 30 + Math.random() * 40);
+      gr.addColorStop(0, 'rgba(40,80,30,0.3)');
+      gr.addColorStop(1, 'rgba(40,80,30,0)');
+      ctx.fillStyle = gr;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(4, 2);
+    return tex;
+  }
+
+  function makeFloorTexture() {
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 512;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#706858';
+    ctx.fillRect(0, 0, 512, 512);
+    // Flagstone grid
+    const s = 64;
+    ctx.strokeStyle = 'rgba(30,26,20,0.7)';
+    ctx.lineWidth = 3;
+    for (let x = 0; x < 512; x += s) {
+      for (let y = 0; y < 512; y += s) {
+        const v = (Math.random() * 20 - 10) | 0;
+        ctx.fillStyle = `rgba(${110+v},${96+v},${80+v},0.35)`;
+        ctx.fillRect(x+2, y+2, s-4, s-4);
+        ctx.strokeRect(x+2, y+2, s-4, s-4);
+      }
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(6, 6);
+    return tex;
+  }
+
+  function makeCarpetTexture() {
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 512;
+    const ctx = c.getContext('2d');
+    // Deep red base
+    ctx.fillStyle = '#7a1414';
+    ctx.fillRect(0, 0, 256, 512);
+    // Gold border
+    ctx.strokeStyle = '#c9933a';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(8, 8, 240, 496);
+    ctx.lineWidth = 4;
+    ctx.strokeRect(18, 18, 220, 476);
+    // Pattern dots
+    ctx.fillStyle = 'rgba(201,147,58,0.4)';
+    for (let y = 40; y < 512; y += 40) {
+      for (let x = 40; x < 256; x += 40) {
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(1, 4);
+    return tex;
+  }
+
+  function makeCeilingTexture() {
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 256;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#2e323c';
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.strokeStyle = 'rgba(20,22,28,0.6)';
+    ctx.lineWidth = 2;
+    for (let x = 0; x < 256; x += 32) ctx.strokeRect(x, 0, 32, 256);
+    for (let y = 0; y < 256; y += 32) ctx.strokeRect(0, y, 256, 32);
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(5, 5);
+    return tex;
+  }
+
+  // Canvas texture with text (for plaque names)
+  function makePlaqueTexture(name) {
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 96;
+    const ctx = c.getContext('2d');
+
+    // Brass gradient
+    const g = ctx.createLinearGradient(0, 0, 512, 96);
+    g.addColorStop(0,   '#4a3010');
+    g.addColorStop(0.3, '#8a6030');
+    g.addColorStop(0.7, '#c9933a');
+    g.addColorStop(1,   '#4a3010');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 512, 96);
+
+    // Border
+    ctx.strokeStyle = '#e8c06a';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(4, 4, 504, 88);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, 492, 76);
+
+    // Rivet dots
+    const rivets = [[20,20],[492,20],[20,76],[492,76]];
+    ctx.fillStyle = '#e8c06a';
+    rivets.forEach(([x,y]) => {
+      ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fill();
+    });
+
+    // Text
+    ctx.fillStyle = '#f0d880';
+    ctx.font = 'bold 32px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(name || 'Untitled', 256, 48);
+
+    return new THREE.CanvasTexture(c);
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  //  BUILD THE ROOM
+  // ════════════════════════════════════════════════════════════════
+
+  const stoneTex   = makeStoneTexture();
+  const floorTex   = makeFloorTexture();
+  const carpetTex  = makeCarpetTexture();
+  const ceilTex    = makeCeilingTexture();
+
+  const stoneMat  = new THREE.MeshLambertMaterial({ map: stoneTex, side: THREE.BackSide });
+  const floorMat  = new THREE.MeshLambertMaterial({ map: floorTex });
+  const ceilMat   = new THREE.MeshLambertMaterial({ map: ceilTex });
+
+  // Room box (inside faces)
+  const roomGeo = new THREE.BoxGeometry(ROOM_W, ROOM_H, ROOM_D);
+  const roomMesh = new THREE.Mesh(
+    roomGeo,
+    [stoneMat, stoneMat, ceilMat, floorMat, stoneMat, stoneMat]
+  );
+  roomMesh.position.y = ROOM_H / 2;
+  scene.add(roomMesh);
+
+  // Floor plane (on top of box floor for better material)
+  const floorGeo  = new THREE.PlaneGeometry(ROOM_W, ROOM_D);
+  const floorMesh = new THREE.Mesh(floorGeo, new THREE.MeshLambertMaterial({ map: floorTex }));
+  floorMesh.rotation.x = -Math.PI / 2;
+  floorMesh.receiveShadow = true;
+  scene.add(floorMesh);
+
+  // Red carpet — runs north–south down the centre
+  const carpetGeo  = new THREE.PlaneGeometry(3.5, ROOM_D - 2);
+  const carpetMesh = new THREE.Mesh(carpetGeo, new THREE.MeshLambertMaterial({ map: carpetTex }));
+  carpetMesh.rotation.x = -Math.PI / 2;
+  carpetMesh.position.y  = 0.01;
+  carpetMesh.receiveShadow = true;
+  scene.add(carpetMesh);
+
+  // ── Entrance arch on south wall ────────────────────────────────
+  // Semi-circular dark arch shape on the south wall interior
+  function buildEntranceArch() {
+    const group = new THREE.Group();
+
+    // Dark arch opening (just a dark plane slightly in front of south wall)
+    const archW = 4.0, archH = 6.0;
+    const archGeo  = new THREE.PlaneGeometry(archW, archH);
+    const archMat  = new THREE.MeshBasicMaterial({ color: 0x080604 });
+    const archMesh = new THREE.Mesh(archGeo, archMat);
+    archMesh.position.set(0, archH / 2, ROOM_D / 2 - 0.01);
+    archMesh.rotation.y = Math.PI;
+    group.add(archMesh);
+
+    // Stone arch surround blocks (left, right, top)
+    const archStoneMat = new THREE.MeshLambertMaterial({ map: stoneTex });
+    // Left pier
+    addBox(group, 0.8, archH + 0.5, 0.3, -archW/2 - 0.4, (archH+0.5)/2, ROOM_D/2 - 0.05, archStoneMat);
+    // Right pier
+    addBox(group, 0.8, archH + 0.5, 0.3,  archW/2 + 0.4, (archH+0.5)/2, ROOM_D/2 - 0.05, archStoneMat);
+    // Arch keystone top
+    addBox(group, archW + 1.6, 0.6, 0.3, 0, archH + 0.3, ROOM_D/2 - 0.05, archStoneMat);
+
+    scene.add(group);
+  }
+  buildEntranceArch();
+
+  function addBox(parent, w, h, d, x, y, z, mat) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    m.position.set(x, y, z);
+    parent.add(m);
+    return m;
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  //  CHANDELIER
+  // ════════════════════════════════════════════════════════════════
+  function buildChandelier(x, y, z) {
+    const group = new THREE.Group();
+    group.position.set(x, y, z);
+
+    const darkMet = new THREE.MeshLambertMaterial({ color: 0x1a1510 });
+    const goldMet = new THREE.MeshLambertMaterial({ color: 0xc9933a });
+    const candleM = new THREE.MeshLambertMaterial({ color: 0xf5f0e8 });
+    const flameM  = new THREE.MeshBasicMaterial({ color: 0xff9920 });
+
+    // Chain
+    const chainGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.5, 6);
+    group.add(new THREE.Mesh(chainGeo, darkMet));
+
+    // Main ring
+    const ringGeo = new THREE.TorusGeometry(1.2, 0.07, 8, 24);
+    const ring    = new THREE.Mesh(ringGeo, darkMet);
+    ring.position.y = -0.75;
+    ring.rotation.x = Math.PI / 2;
+    group.add(ring);
+
+    // Candles around the ring
+    const candleAngles = [0, Math.PI/3, 2*Math.PI/3, Math.PI, 4*Math.PI/3, 5*Math.PI/3];
+    candleAngles.forEach(angle => {
+      const cx = Math.cos(angle) * 1.2;
+      const cz = Math.sin(angle) * 1.2;
+
+      const cGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.2, 8);
+      const candle = new THREE.Mesh(cGeo, candleM);
+      candle.position.set(cx, -0.65, cz);
+      group.add(candle);
+
+      // Flame
+      const fGeo = new THREE.SphereGeometry(0.05, 6, 6);
+      const flame = new THREE.Mesh(fGeo, flameM);
+      flame.scale.y = 1.5;
+      flame.position.set(cx, -0.52, cz);
+      group.add(flame);
+
+      // Point light at each candle
+      const light = new THREE.PointLight(0xffcc66, 0.6, 12);
+      light.position.set(cx, -0.52, cz);
+      group.add(light);
+    });
+
+    // Centre pendant ball
+    const pendGeo = new THREE.SphereGeometry(0.12, 8, 8);
+    const pend    = new THREE.Mesh(pendGeo, goldMet);
+    pend.position.y = -0.85;
+    group.add(pend);
+
+    // Spokes
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      const spoke = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.2, 6), darkMet);
+      spoke.rotation.z = Math.PI / 2;
+      spoke.rotation.x = a;
+      const sv = new THREE.Vector3(Math.cos(a) * 0.6, -0.75, Math.sin(a) * 0.6);
+      spoke.position.copy(sv);
+      spoke.lookAt(new THREE.Vector3(0, -0.75, 0));
+      spoke.rotateX(Math.PI / 2);
+      group.add(spoke);
+    }
+
+    scene.add(group);
+    return group;
+  }
+
+  // Main chandelier in centre
+  buildChandelier(0, ROOM_H - 0.2, 0);
+  // Two side chandeliers
+  buildChandelier(-ROOM_W * 0.28, ROOM_H - 0.2, -2);
+  buildChandelier( ROOM_W * 0.28, ROOM_H - 0.2, -2);
+
+  // ── Wall torches ───────────────────────────────────────────────
+  function addTorch(x, y, z, rotY) {
+    const g    = new THREE.Group();
+    const bMat = new THREE.MeshLambertMaterial({ color: 0x3a2010 });
+    const fMat = new THREE.MeshBasicMaterial({ color: 0xff8810 });
+
+    const bracket = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.3, 8), bMat);
+    bracket.rotation.z = Math.PI / 4;
+    g.add(bracket);
+
+    const torch = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.25, 8), bMat);
+    torch.position.set(0.12, 0.1, 0);
+    g.add(torch);
+
+    const flame = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), fMat);
+    flame.scale.y = 1.6;
+    flame.position.set(0.12, 0.26, 0);
+    g.add(flame);
+
+    const light = new THREE.PointLight(0xff9933, 1.2, 10);
+    light.position.set(0.12, 0.26, 0);
+    g.add(light);
+
+    g.position.set(x, y, z);
+    g.rotation.y = rotY;
+    scene.add(g);
+  }
+
+  // Torches on the walls — roughly evenly spaced
+  const tY = ROOM_H * 0.6;
+  const half = ROOM_W / 2 - 0.2;
+  for (let i = -1; i <= 1; i++) {
+    addTorch(-half, tY, i * (ROOM_D / 4),  Math.PI / 2);
+    addTorch( half, tY, i * (ROOM_D / 4), -Math.PI / 2);
+    addTorch(i * (ROOM_W / 4), tY, -ROOM_D / 2 + 0.2, 0);
+    addTorch(i * (ROOM_W / 4), tY,  ROOM_D / 2 - 0.2, Math.PI);
+  }
+
+  // ── Ambient & directional light ────────────────────────────────
+  const ambLight = new THREE.AmbientLight(0xffddaa, 0.35);
+  scene.add(ambLight);
+
+  const dirLight = new THREE.DirectionalLight(0xffcc88, 0.4);
+  dirLight.position.set(0, ROOM_H - 1, 0);
+  dirLight.castShadow = true;
+  scene.add(dirLight);
+
+  // ════════════════════════════════════════════════════════════════
+  //  PICTURE FRAMES
+  // ════════════════════════════════════════════════════════════════
+
+  // Store all frame meshes for raycasting (click detection)
+  const frameObjects = []; // { mesh, data }
+
+  function wallPositionToWorld(wall, positionFrac, heightOffset) {
+    const halfW = ROOM_W / 2 - 0.25;
+    const halfD = ROOM_D / 2 - 0.25;
+    const eyeY  = ROOM_H * 0.45 + heightOffset;
+
+    switch (wall) {
+      case 'north': return { x: positionFrac * halfW * 0.85, y: eyeY, z: -halfD + 0.15, rotY: 0       };
+      case 'south': return { x: positionFrac * halfW * 0.85, y: eyeY, z:  halfD - 0.15, rotY: Math.PI };
+      case 'east':  return { x: halfW - 0.15, y: eyeY, z: positionFrac * halfD * 0.85, rotY: -Math.PI/2 };
+      case 'west':  return { x: -halfW + 0.15, y: eyeY, z: -positionFrac * halfD * 0.85, rotY: Math.PI/2 };
+      default:      return { x: 0, y: eyeY, z: 0, rotY: 0 };
+    }
+  }
+
+  function buildFrame(frameData) {
+    const [fW, fH] = FRAME_SIZES[frameData.size] || FRAME_SIZES.medium;
+    const group    = new THREE.Group();
+    const pos      = wallPositionToWorld(frameData.wall, frameData.position, frameData.height);
+
+    group.position.set(pos.x, pos.y, pos.z);
+    group.rotation.y = pos.rotY;
+
+    // ── Gold frame border ──────────────────────────────────────
+    const frameGoldMat  = new THREE.MeshLambertMaterial({ color: FRAME_GOLD });
+    const frameInnerMat = new THREE.MeshLambertMaterial({ color: FRAME_GOLD_INNER });
+    const border = 0.08;
+
+    // Top bar
+    addBox(group, fW + border*2, border, FRAME_DEPTH, 0, fH/2 + border/2, 0, frameGoldMat);
+    // Bottom bar
+    addBox(group, fW + border*2, border, FRAME_DEPTH, 0, -fH/2 - border/2, 0, frameGoldMat);
+    // Left bar
+    addBox(group, border, fH + border*2, FRAME_DEPTH, -fW/2 - border/2, 0, 0, frameGoldMat);
+    // Right bar
+    addBox(group, border, fH + border*2, FRAME_DEPTH,  fW/2 + border/2, 0, 0, frameGoldMat);
+
+    // Inner bevel strips (dark gold)
+    const bv = 0.035;
+    addBox(group, fW, bv, FRAME_DEPTH * 0.5, 0, fH/2 - bv/2, 0, frameInnerMat);
+    addBox(group, fW, bv, FRAME_DEPTH * 0.5, 0, -fH/2 + bv/2, 0, frameInnerMat);
+    addBox(group, bv, fH, FRAME_DEPTH * 0.5, -fW/2 + bv/2, 0, 0, frameInnerMat);
+    addBox(group, bv, fH, FRAME_DEPTH * 0.5,  fW/2 - bv/2, 0, 0, frameInnerMat);
+
+    // ── Canvas (image plane) ────────────────────────────────────
+    const canvasGeo  = new THREE.PlaneGeometry(fW, fH);
+    const canvasMat  = new THREE.MeshLambertMaterial({ color: 0x111008 });
+
+    if (frameData.src) {
+      loader.load(frameData.src,
+        (tex) => { canvasMat.map = tex; canvasMat.needsUpdate = true; },
+        undefined,
+        () => { /* image not found — stays dark */ }
+      );
+    }
+
+    const canvas3D = new THREE.Mesh(canvasGeo, canvasMat);
+    canvas3D.position.z = FRAME_WALL_GAP;
+    group.add(canvas3D);
+
+    // Store for raycasting — clicking canvas3D triggers inspect
+    frameObjects.push({ mesh: canvas3D, data: frameData });
+
+    // ── Metal plaque ────────────────────────────────────────────
+    const plaqueTex = makePlaqueTexture(frameData.name);
+    const plaqueMat = new THREE.MeshLambertMaterial({ map: plaqueTex });
+    const plaqueMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(PLAQUE_W * (fW / 1.5), PLAQUE_H * 1.5),
+      plaqueMat
+    );
+    plaqueMesh.position.set(0, -fH/2 - PLAQUE_OFFSET_Y - 0.06, FRAME_WALL_GAP + 0.01);
+    group.add(plaqueMesh);
+
+    // Offset group slightly off the wall
+    const wallNormal = new THREE.Vector3(0, 0, FRAME_WALL_GAP + FRAME_DEPTH / 2);
+    wallNormal.applyEuler(new THREE.Euler(0, pos.rotY, 0));
+    group.position.add(wallNormal);
+
+    scene.add(group);
+    return group;
+  }
+
+  // Build all frames from data
+  CFG.frames.forEach(f => buildFrame(f));
+
+  // ── Raycaster for frame clicks ─────────────────────────────────
+  const raycaster   = new THREE.Raycaster();
+  const screenCentre = new THREE.Vector2(0, 0); // always ray from screen centre
+
+  // ════════════════════════════════════════════════════════════════
+  //  PLAYER CONTROLS (Pointer Lock)
+  // ════════════════════════════════════════════════════════════════
+
+  let isLocked = false;
+  let yaw   = Math.PI; // face north (into room)
+  let pitch = 0;
+
+  const keys = {};
+  document.addEventListener('keydown', e => { keys[e.code] = true; });
+  document.addEventListener('keyup',   e => { keys[e.code] = false; });
+
+  // Pointer lock
+  canvas.addEventListener('click', () => {
+    if (!inspectOpen && !startVisible) {
+      canvas.requestPointerLock();
+    }
+  });
+
+  document.addEventListener('pointerlockchange', () => {
+    isLocked = document.pointerLockElement === canvas;
+    pauseOverlay.classList.toggle('visible', !isLocked && !startVisible && !inspectOpen);
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!isLocked) return;
+    yaw   -= e.movementX * MOUSE_SENS;
+    pitch -= e.movementY * MOUSE_SENS;
+    pitch  = Math.max(-Math.PI * 0.35, Math.min(Math.PI * 0.35, pitch));
+    camera.rotation.y = yaw;
+    camera.rotation.x = pitch;
+  });
+
+  // Click to inspect frame (only when pointer is locked)
+  document.addEventListener('mousedown', e => {
+    if (!isLocked || e.button !== 0) return;
+    raycaster.setFromCamera(screenCentre, camera);
+    const hits = raycaster.intersectObjects(frameObjects.map(f => f.mesh));
+    if (hits.length > 0) {
+      const hit = hits[0];
+      if (hit.distance < 6) { // only if within 6m
+        const fo = frameObjects.find(f => f.mesh === hit.object);
+        if (fo) openInspect(fo.data);
+      }
+    }
+  });
+
+  // ── Frame hover hint ───────────────────────────────────────────
+  const interactPrompt = document.getElementById('interact-prompt');
+  let   hoverFrame     = null;
+
+  function checkHover() {
+    if (!isLocked) return;
+    raycaster.setFromCamera(screenCentre, camera);
+    const hits = raycaster.intersectObjects(frameObjects.map(f => f.mesh));
+    if (hits.length > 0 && hits[0].distance < 6) {
+      const fo = frameObjects.find(f => f.mesh === hits[0].object);
+      if (fo !== hoverFrame) {
+        hoverFrame = fo;
+        interactPrompt.textContent = `Click to inspect: "${fo.data.name}"`;
+        interactPrompt.classList.add('visible');
+      }
+    } else {
+      if (hoverFrame) {
+        hoverFrame = null;
+        interactPrompt.classList.remove('visible');
+      }
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  //  INSPECT OVERLAY
+  // ════════════════════════════════════════════════════════════════
+
+  const inspectOverlay   = document.getElementById('inspect-overlay');
+  const inspectImg       = document.getElementById('inspect-img');
+  const inspectPH        = document.getElementById('inspect-placeholder');
+  const inspectPlaqueName= document.getElementById('inspect-plaque-name');
+  const scrollTitle      = document.getElementById('scroll-title');
+  const scrollDesc       = document.getElementById('scroll-desc');
+  const inspectClose     = document.getElementById('inspect-close');
+  let   inspectOpen      = false;
+
+  function openInspect(frameData) {
+    document.exitPointerLock();
+    inspectOpen = true;
+    inspectOverlay.classList.add('open');
+
+    // Image
+    if (frameData.src) {
+      inspectImg.src     = frameData.src;
+      inspectImg.alt     = frameData.name;
+      inspectImg.style.display  = 'block';
+      inspectPH.style.display   = 'none';
+    } else {
+      inspectImg.style.display  = 'none';
+      inspectPH.style.display   = 'flex';
+    }
+
+    inspectPlaqueName.textContent = (frameData.name || 'Untitled').toUpperCase();
+    scrollTitle.textContent       = frameData.name || 'Untitled';
+    scrollDesc.textContent        = frameData.description || 'No description provided.';
+  }
+
+  function closeInspect() {
+    inspectOpen = false;
+    inspectOverlay.classList.remove('open');
+  }
+
+  inspectClose.addEventListener('click', closeInspect);
+  inspectOverlay.addEventListener('click', e => {
+    if (e.target === inspectOverlay) closeInspect();
+  });
+
+  // ════════════════════════════════════════════════════════════════
+  //  UI — start / pause overlays
+  // ════════════════════════════════════════════════════════════════
+
+  const startOverlay = document.getElementById('start-overlay');
+  const startBtn     = document.getElementById('start-btn');
+  const pauseOverlay = document.getElementById('pause-overlay');
+  let   startVisible = true;
+
+  // Fill in title from data
+  document.getElementById('start-title').textContent = CFG.roomTitle    || 'The Gallery';
+  document.getElementById('start-sub').textContent   = CFG.roomSubtitle || '';
+  document.getElementById('hud-title').textContent   = '⭐ ' + (CFG.roomTitle || 'The Gallery');
+
+  startBtn.addEventListener('click', () => {
+    startVisible = false;
+    startOverlay.classList.add('hidden');
+    setTimeout(() => { startOverlay.style.display = 'none'; }, 700);
+    canvas.requestPointerLock();
+  });
+
+  pauseOverlay.addEventListener('click', () => {
+    if (!inspectOpen) canvas.requestPointerLock();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Escape') {
+      if (inspectOpen) {
+        closeInspect();
+      }
+      // pointer lock auto-releases on ESC; pointerlockchange handles pause overlay
+    }
+  });
+
+  // ════════════════════════════════════════════════════════════════
+  //  ANIMATION LOOP
+  // ════════════════════════════════════════════════════════════════
+
+  const clock = new THREE.Clock();
+  const moveDir = new THREE.Vector3();
+  const forward = new THREE.Vector3();
+  const right   = new THREE.Vector3();
+
+  // Collision: keep player inside room
+  const MARGIN = 1.0;
+  const minX = -ROOM_W / 2 + MARGIN;
+  const maxX =  ROOM_W / 2 - MARGIN;
+  const minZ = -ROOM_D / 2 + MARGIN;
+  const maxZ =  ROOM_D / 2 - MARGIN;
+
+  // Chandelier flicker animation
+  let flickerT = 0;
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    const dt = clock.getDelta();
+
+    if (isLocked && !inspectOpen) {
+      // ── Movement ──────────────────────────────────────────────
+      moveDir.set(0, 0, 0);
+      if (keys['KeyW'] || keys['ArrowUp'])    moveDir.z -= 1;
+      if (keys['KeyS'] || keys['ArrowDown'])  moveDir.z += 1;
+      if (keys['KeyA'] || keys['ArrowLeft'])  moveDir.x -= 1;
+      if (keys['KeyD'] || keys['ArrowRight']) moveDir.x += 1;
+
+      if (moveDir.lengthSq() > 0) {
+        moveDir.normalize();
+
+        // Get camera yaw direction
+        forward.set(-Math.sin(yaw), 0, -Math.cos(yaw));
+        right.set(Math.cos(yaw), 0, -Math.sin(yaw));
+
+        const velocity = new THREE.Vector3()
+          .addScaledVector(forward, -moveDir.z)
+          .addScaledVector(right,    moveDir.x)
+          .multiplyScalar(PLAYER_SPEED * dt);
+
+        camera.position.add(velocity);
+
+        // Clamp to room
+        camera.position.x = Math.max(minX, Math.min(maxX, camera.position.x));
+        camera.position.z = Math.max(minZ, Math.min(maxZ, camera.position.z));
+        camera.position.y = PLAYER_HEIGHT; // no jumping
+      }
+
+      // ── Hover check ──────────────────────────────────────────
+      checkHover();
+    }
+
+    // Subtle candle flicker
+    flickerT += dt;
+    scene.traverse(obj => {
+      if (obj.isPointLight) {
+        obj.intensity = obj.intensity * 0.92 + (0.5 + Math.sin(flickerT * 3.7 + obj.id) * 0.3) * 0.08;
+      }
+    });
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+})();
+</script>
+
+<!-- Your existing castle nav script (loads the banner navigation) -->
 <script src="script.js"></script>
 
 </body>
