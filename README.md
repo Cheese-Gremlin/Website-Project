@@ -77,16 +77,18 @@ other stuff:
     - mirror where user can make their avatar? (probably too ambitious as it will need to store user information somewhere...)
 
 
-
-# coding with AI
-I use the Claude ai bot (sonnet 4.6)
-
+# working with AI
 notes:
     12/03/2026
     really happy with how working with AI is going. I keep getting pleasantly surprised by how well it carries out certain tasks. I also really like how it explains everything and does the coding in a way that i can edit it (most likely due to me adding 'please make this easily editable') which helps me accomplish my goal of learning and understanding how the code works. I do notice that often it does/changes things i didnt ask it too which is kind of frustrating because you have to specify all the things that are supposed to stay the exact same.
     19/03/26
     im starting to get more and more frustrated with not being able to have full control over the entire design/ code as it is really difficult to change/ edit certain things without using the AI. (e.g. the 'button' that overlays the entrance door of the castle is not how i want it to be but I cant edit it to perfectly fit the door due to how its coded and my limited knowledge to how it works). This basically means thats if I use AI once, i have to use it for everything but it can never perfectly make what I want it to (this may be caused by me not communicating my wishes/ thoughts properly but it still sometimes doesnt seem to do what I ask it to or changes things without getting instruction to do so) The only solution I can think of is that I would need to learn how the code works (aka learn CSS, JS, HTML etc) so that I can make changes myself. If i would have to use AI, i would get it to code the base idea and then I go in with my coding skills and make everything perfect to how I want it. In a way this is a good but also bad thing as this means that the skill of coding is still very necessary and cant be replaced by AI (at least not soon?) but also means that I cant make this project exactly what I want it to be with my current skills set as I dont know how to code the things I need to.
     Overall i find this frustrating and really limiting and wish we would be taught how to do these things rather than relying to AI. MNy solution is to find (free) online courses/websites that teach me the different languages and hopefully I wont be so limited in the future. Sadly that isnt possible for this project so I will need to do my best with what I can and just accept that I cant make it truly what I want it to be. 
+    24/03/26
+    i hate this.... I have no true controll over anything since i dont know how the code works. I have to rely on AI to do everything and i just hate it. i can do very small tweaks (chaning colours, text) but not the actual things that matter. It is so unbelevably frustrating. I have no motivation to do anything because nothing is fun. 
+    
+# coding with AI
+I use the Claude ai bot (sonnet 4.6)
 
 **asking it to make the navigation menu**
 I showed it all my HTML files, my styles.css and script.js file, and an image of an example banner ![alt text](images/blank-red-banner-in-pixel-art-style-vector.jpg) with the following prompt:
@@ -186,6 +188,10 @@ output:
     ![alt text](<images/landing-hom-transition pt.2.png>)
 opinion:
     the shape isnt perfect but i will try to tweak it with the editable variables it gave me. I think its very cool that id added a 'debug shape' so that i can see what it looks like while i edit it, its very handy and shows that it takes consideration for my original request of making it easily editable. It also changed the button from only having a yellow outline to being a solid, slightly transparent yellow shape which i dont like as i prefer the outline and the 'glow effect' it would give when aligned with the door.
+
+-- changes i made to the code ---
+    I removed the 'golden glow' that the button overlayed across the door has by commenting out the 'hover' section. I did this becasue due to how the AI coded it, the button never has the same shape that the door has. This is because the button is coded to scale to the window size and the background image doesn scale the same way so they scale at different ratios and different directions.
+
 
 
 **making the gallery corridor and side rooms**

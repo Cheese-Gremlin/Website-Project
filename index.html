@@ -99,9 +99,9 @@
       /* ── EDIT THESE to reposition/resize the door hit area ──
          All values are % of viewport width/height                */
       left:   36%;
-      top:    18%;
+      top:    25%;
       width:  28%;
-      height: 64%;
+      height: 70%;
 
       /* Arch curve: what fraction of the width becomes the semicircle radius.
          50 = perfect semicircle (radius = half the button width).
@@ -128,10 +128,11 @@
       transition: background 0.2s ease, box-shadow 0.2s ease;
       pointer-events: none;
     }
-    #door-hotspot:hover::after {
+
+    /* #door-hotspot:hover::after {
       background: rgba(255, 208, 96, 0.12);
       filter: drop-shadow(0 0 6px rgba(255, 208, 96, 0.7));
-    }
+    } */
 
     /* ── Page body — sits above scene but behind hotspot ── */
     body {
