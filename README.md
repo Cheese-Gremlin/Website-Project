@@ -1,4 +1,4 @@
-# Website-Project
+# Castle-Website-Project
 mddn242 project 1 - website
 
 goals:
